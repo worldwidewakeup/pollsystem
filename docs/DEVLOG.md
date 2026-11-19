@@ -61,6 +61,45 @@ logged.
 
 ---
 
+## 2026-11-14 — Prod backups: run the Postgres clients on the host, around the VPN
+
+**Intent:** fix the nightly prod backup, which had failed every night since
+2026-11-09. (The session that made this change ran outside the Dev
+Container, so its prompt isn't on record here; this is a paraphrase of the
+commit's own description.)
+
+**Cause:**
+
+- Neon drops connections that arrive through Proton VPN ("server closed
+  the connection unexpectedly").
+- Neon itself was fine: no quota problem, no IP allowlist, the endpoint
+  active, the `claude` role unchanged. The backup worked with the VPN off.
+- Proton's split tunnel (include mode) lets processes on the host bypass
+  the VPN, but traffic from Docker containers still goes through it.
+
+**Changed:**
+
+- **`scripts/backup-prod.bash`:**
+  - It runs `pg_dump` / `psql` from `/usr/lib/postgresql/18/bin` on the
+    host instead of in a `postgres:18` container.
+  - It uses `psql -X`, so `~/.psqlrc` can't change the output.
+  - It stops with an install hint if the clients are missing.
+  - Neon calls are retried once after 30 s, and a network failure while
+    traffic goes through the VPN says so.
+  - `log()` no longer pipes through `tee`: journald couldn't tie lines from
+    that short-lived process to the unit, so `journalctl --user -u` dropped
+    them.
+- **New `scripts/install-pg-client-18.bash`:** installs
+  `postgresql-client-18` from apt.postgresql.org. Ubuntu 24.04 only ships
+  16, and Neon runs 18. It checks the signing key's fingerprint first. Run
+  it once with `pkexec`.
+- **Unchanged:** the restore check stays in Docker, since it only talks to
+  a local throwaway database.
+
+**Commit:** `d379a35`
+
+---
+
 ## 2026-11-06 — Local poll 761 re-closed by my test; fixed
 
 **Requested:**

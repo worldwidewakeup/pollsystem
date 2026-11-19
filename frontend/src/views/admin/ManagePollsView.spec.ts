@@ -169,15 +169,15 @@ describe('ManagePollsView: Show: columns', () => {
 
 
 describe('ManagePollsView: Show nationwide and notes (2026-10-28)', () => {
-  it('hides nationwide polls until Status → Nationwide is ticked', async () => {
+  it('shows nationwide polls by default (2026-11-19); unticking Status → Nationwide hides them', async () => {
     serverRows = [
       { id: 1, type: 'QUESTIONNAIRE', title: 'Local', blocked: false },
       { id: 3, type: 'ELECTION', title: 'Everywhere', blocked: false, nationwide: true },
     ]
     const w = await mountView()
-    expect(titles(w)).toEqual(['Local'])
-    await w.find('[data-test="status-filter-nationwide"]').setValue(true)
     expect(titles(w)).toEqual(['Everywhere', 'Local'])
+    await w.find('[data-test="status-filter-nationwide"]').setValue(false)
+    expect(titles(w)).toEqual(['Local'])
   })
 
   it('Status shows polls by stage: a passed close date counts as Closed; unticking a stage hides it', async () => {
@@ -386,7 +386,7 @@ describe('ManagePollsView: Poll type label and All (2026-11-06)', () => {
     expect(button.text()).toBe('All▾')
     // Status the same way (label above, the button shows only the summary).
     expect(w.find('[data-test="status-filter"] span').text()).toBe('Status')
-    expect(w.find('[data-test="status-filter-button"]').text()).toBe('3 selected▾')
+    expect(w.find('[data-test="status-filter-button"]').text()).toBe('4 selected▾')
     const all = w.find('[data-test="type-filter-all"]')
     expect((all.element as HTMLInputElement).checked).toBe(true)
     await all.setValue(false)
@@ -409,8 +409,8 @@ describe('ManagePollsView: Status All (2026-11-06)', () => {
     ]
     const w = await mountView()
     const all = w.find('[data-test="status-filter-all"]')
-    expect((all.element as HTMLInputElement).indeterminate).toBe(true) // 3 of 5 by default
-    expect(titles(w)).toEqual(['Plain'])
+    expect((all.element as HTMLInputElement).indeterminate).toBe(true) // 4 of 5 by default (all but Disabled)
+    expect(titles(w).sort()).toEqual(['Everywhere', 'Plain'])
     await all.setValue(true)
     expect(w.find('[data-test="status-filter-button"]').text()).toBe('All▾')
     expect(titles(w).sort()).toEqual(['Everywhere', 'Plain', 'Switched off'])

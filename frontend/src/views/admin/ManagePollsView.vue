@@ -24,7 +24,8 @@ const columnOptions = computed(() => ([
 ] as const).map(([key, label]) => ({ key, label: t(`admin.managePolls.${label}`) })))
 // Deep-link support, e.g. the Polls link on /admin/manage-creators:
 // ?creator=<email>&sort=closeDate&dir=desc&showDisabled=1
-// (showDisabled=1 / showNationwide=1 still work: they tick those Status options.)
+// (showDisabled=1 ticks Status → Disabled; showNationwide=1 is now a no-op,
+// since Nationwide is ticked by default.)
 const route = useRoute()
 const router = useRouter()
 const q = (k: string): string => {
@@ -81,12 +82,13 @@ const selectedKinds = computed<string[]>({
  * nationwide"). Two kinds of option: a poll shows when its stage is ticked
  * (Published, Draft or Closed; Closed includes a close date that has passed),
  * and disabled or nationwide polls show only when those are ticked too.
+ * Nationwide is ticked by default (2026-11-19): with it off, a site whose only
+ * questionnaire was nationwide showed an empty list, which read as broken.
  */
 type StatusOpt = 'PUBLISHED' | 'DRAFT' | 'CLOSED' | 'DISABLED' | 'NATIONWIDE'
 const statusFilter = ref<string[]>([
-  'PUBLISHED', 'DRAFT', 'CLOSED',
+  'PUBLISHED', 'DRAFT', 'CLOSED', 'NATIONWIDE',
   ...(q('showDisabled') === '1' ? ['DISABLED'] : []),
-  ...(q('showNationwide') === '1' ? ['NATIONWIDE'] : []),
 ])
 const showDisabled = computed(() => statusFilter.value.includes('DISABLED'))
 const showNationwide = computed(() => statusFilter.value.includes('NATIONWIDE'))

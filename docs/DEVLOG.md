@@ -61,6 +61,49 @@ logged.
 
 ---
 
+## 2026-11-19 — Manage Polls shows nationwide polls by default
+
+**Requested:**
+
+> I noticed that on prod, admin/manage-polls run by a user with SUPER
+> access and who's user.zipcode = 98264 can leave all inputs at their
+> initial settings except poll type set to 'Questionnaire' and no results
+> are shown but in local the same user with SUPER access and a
+> users.zipcode set to 98264 shows 25 questionnaires which is the correct
+> behavior. Can you check why prod comes up with no results?
+
+then
+
+> Let's have the default include Nationwide
+
+**Cause (not a bug):**
+
+- Checked read-only against prod's database: prod has **one**
+  questionnaire, published and nationwide.
+- Local has 26: 24 state-level drafts, 1 at zipcode level, and 1
+  nationwide.
+- The Status filter left nationwide polls out by default, so prod's list
+  was empty. Local showed 25 because its nationwide one was hidden too.
+- The super's zipcode plays no part, since a super sees polls everywhere.
+
+**Changed:**
+
+- Status → **Nationwide** is now ticked by default, so the button reads
+  "4 selected". Unticking it hides nationwide polls.
+- Old `?showNationwide=1` links still load; the parameter now does
+  nothing.
+- Three unit tests that expected Nationwide off by default were updated.
+
+**Verified:**
+
+- vue-tsc clean; all 217 frontend tests pass (35 files).
+- The first full run after the machine had been idle timed out loading
+  files; the rerun was clean.
+
+**Commit:** `d6d30c8`
+
+---
+
 ## 2026-11-14 — Prod backups: run the Postgres clients on the host, around the VPN
 
 **Intent:** fix the nightly prod backup, which had failed every night since

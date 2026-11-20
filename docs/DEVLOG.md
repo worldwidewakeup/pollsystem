@@ -61,6 +61,54 @@ logged.
 
 ---
 
+## 2026-11-20 — Election-cycle driver: fetch, maps, districts, content, load (runbook step 4)
+
+**Requested:** step 4 of the agreed order ("go with your order"): wrap the
+existing map, content and load scripts.
+
+**Changed:**
+
+- **`cycle.py` gains five commands:**
+  - **`fetch`:** the cycle file's Census downloads, into
+    `tmp/election-cycle/<year>/`;
+  - **`maps XX…`:** `build-state-map.py` in each state's mode;
+  - **`districts XX… [--write NAME]`:** SQL that replaces each state's
+    district→county rows, or the next migration;
+  - **`content XX…`:** runs `build-state.py`;
+  - **`load ENV XX… [--publish]`:** runs `load-state.bash`.
+- **No more hard-coded 2026:** `build-state.py` and `load-state.bash` take
+  `--cycle YEAR` (default 2026). They read the year, election day, title
+  prefix (Midterm or General) and House seats from
+  `docs/launch-content/<year>-cycle.json`. Election-night closing times
+  are checked against that day.
+- **The 2026 cycle file** now records each state's plan label, plan files
+  (shapes + field, or block list + blocks) and excluded counties (WA:
+  Island), plus the downloads.
+- **Older drift fixed:** Alaska's content file had been hand-edited to "(ranked
+  choice)" office names when ranked voting arrived (V44), but the builder
+  still wrote the older wording, as the original script does too. AK's
+  research now has `rankedInApp: true`, which writes "(ranked choice)".
+  Maine, ranked only on paper, keeps "pick your first choice here".
+- **The runbook** has "the short version for a new cycle" and the full
+  command table.
+
+**Verified:**
+
+- **`content`:** a full rebuild of all 47 researched states reproduces the
+  committed content files exactly.
+- **`maps`:** WA (excluded county), AK (crosses 180°), TX (plan shapes), OH
+  (block list) and TN (grid) rebuilt byte-for-byte identical.
+- **`districts`:** WA, TX and OH reproduce V46 and V48's rows exactly. TN is
+  skipped with its reason; AK quietly (one seat). `--write` names the next
+  migration (V49, test file deleted).
+- **`load local DE ID`** (directly and through the driver): every poll was
+  already there, and the election count stayed at 486.
+- **`fetch`:** reports the four staged downloads as present.
+
+**Commit:** `4aeab16`
+
+---
+
 ## 2026-11-20 — District ↔ county rows for every state but Tennessee (runbook step 3)
 
 **Requested:** step 3 of the agreed order ("go with your order"): district

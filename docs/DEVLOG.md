@@ -61,6 +61,89 @@ logged.
 
 ---
 
+## 2026-11-20 — Search: a county finds its state's district ballots (Washington first)
+
+**Requested:**
+
+> There is an issue with polls/search, if I leave Title blank and set State
+> to 'Washington' and set County to 'Whatcom' and click 'Search' I get no
+> results even though Whatcom county is in district 2 of washington state.
+> Is there a fix for that?
+
+> Well it depends, would you say that a) voting district's borders are
+> always equivalent to a county's borders, and b) it is reasonable to
+> expect this relationship between a district's borders and a county's
+> borders to remain in the future?
+
+> Can we go with option B but only the poll title has 'Midterm' + State
+> name + 'District' followed by a number?
+
+> 2a
+
+**Cause:**
+
+- A county search lists polls *inside* the county; that was the rule
+  decided 2026-10-27.
+- Every district ballot ("2026 Midterm Washington District 2") is stored
+  with **the whole state** as its area.
+- Nothing recorded which counties make up a district: voters choose their
+  district ballot themselves.
+
+**Decision:**
+
+- District lines aren't county lines. Districts must have equal
+  population, so King, Pierce, Snohomish and others are split. The lines
+  also change with each census, mid-decade redraws (TX, CA, FL, NC, OH,
+  UT, …) and court orders (AL, LA).
+- So a district's counties are not made its official area. That would be
+  approximate for split counties, would go stale, and would change the
+  results' within/outside split.
+- Instead (option 2) they're a **search-only lookup**, tagged with the map
+  they belong to. The poll stays statewide.
+- Washington comes first (option a).
+
+**Changed:**
+
+- **V46 `district_counties`:** plan, state, district, county, and `whole`
+  (true when the county lies in one district).
+  - The rows are matched by state initial and county name, so the result is
+    the same on local, staging and prod.
+  - Washington gets 50 rows, covering all 39 counties.
+- **Source:** the Census Bureau's `tab20_cd11920_county20_natl.txt`
+  (119th Congress, the maps in use for 2026). Parts with no land are left
+  out.
+- **New `scripts/maps/district-counties.py`:** turns that file into the
+  migration rows for any states named. Redrawn states need their new plan
+  instead.
+- **`PollSearchController`:** a county search also lists an election when
+  all of these hold:
+  - its title ends "Midterm <State> District <n>";
+  - its area is that one state;
+  - district *n* touches the county.
+
+  State-only and zipcode searches are unchanged.
+- The help page `finding-polls.md` explains the exception.
+
+**Verified:**
+
+- A new test in `PollSearchPurviewTest`:
+  - Whatcom (with or without the state) → District 2 only;
+  - Snohomish → 1, 2 and 8;
+  - Washington alone → all four test district ballots plus the statewide
+    one;
+  - 98225 → none;
+  - Oregon's District 2 is never matched.
+- PollSearchControllerTest 9, PollSearchPurviewTest 2 and StateSearchTest
+  2 pass; help tests 7 pass.
+- V46 was dry-run in a rolled-back transaction, then applied on local by
+  Flyway (50 rows).
+- On local, through the search API: WA + Whatcom → "2026 Midterm
+  Washington District 2"; WA + Snohomish → 1, 2, 8; WA + King → 1, 7, 8, 9.
+
+**Commit:** `5ea927a`
+
+---
+
 ## 2026-11-19 — Manage Polls shows nationwide polls by default
 
 **Requested:**

@@ -61,6 +61,37 @@ logged.
 
 ---
 
+## 2026-11-20 — Runbook for setting up a new election cycle
+
+**Requested:**
+
+> Can you write the code for an overarching process that completes the
+> steps necessary to re-generate the lists of states, counties, zipcodes,
+> maps, districts including what you need from me to accomplish setting up
+> for a new midterm election? Or perhaps just a document under docs then
+> work on the coding?
+
+**Changed:**
+
+- New `docs/ELECTION-CYCLE-SETUP.md`, written first so the code follows it.
+  - **The layers:** states, counties, zipcodes, House seats, district lines
+    and ballots, with how often each changes and where it lives.
+  - **What's needed from the user:** the election, the states, tokens, and
+    decisions on redrawn plans, ballot scope, research review, publishing
+    and prod deploys.
+  - **Nine ordered steps:** each names the script that exists today
+    (`build-state-map.py`, `district-counties.py`, `build-state.py`,
+    `load-state.bash`), or says there's none.
+  - **The 2026-specific code** to generalize, file by file.
+  - **A proposed driver:** `scripts/election-cycle/`, with a manifest per
+    cycle and the commands `status`, `fetch`, `maps`, `districts`,
+    `content`, `load` and `check`.
+  - **Open questions** for the user.
+
+**Commit:** `06056f2`
+
+---
+
 ## 2026-11-20 — Search: a county finds its state's district ballots (Washington first)
 
 **Requested:**

@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import DemoAccountCard from '@/components/DemoAccountCard.vue'
 import SubstackMembersCard from '@/components/SubstackMembersCard.vue'
+import { setElectionCycle, type ElectionCycle } from '@/composables/useElectionCycle'
 
 const { t } = useI18n()
 
@@ -99,9 +100,45 @@ function pct(share: number): string {
   return `${(share * 100).toFixed(1)}%`
 }
 
+// Election cycle (V47): the year, day and kind the site's ballots belong to.
+// Ballot titles start with its prefix ("2026 Midterm"); the state maps follow it.
+const cycle = ref<ElectionCycle | null>(null)
+const cycleYear = ref<number | null>(null)
+const cycleDate = ref('')
+const cycleKind = ref<'MIDTERM' | 'GENERAL'>('MIDTERM')
+const cycleBusy = ref(false)
+const cycleSaved = ref(false)
+const cycleError = ref<string | null>(null)
+function showCycle(c: ElectionCycle) {
+  cycle.value = c
+  cycleYear.value = c.year
+  cycleDate.value = c.date
+  cycleKind.value = c.kind
+}
+async function fetchCycle() {
+  try { showCycle((await axios.get<ElectionCycle>('/api/election-cycle')).data) } catch { /* the card says it's unavailable */ }
+}
+async function saveCycle() {
+  cycleBusy.value = true
+  cycleSaved.value = false
+  cycleError.value = null
+  try {
+    const next = (await axios.put<ElectionCycle>('/api/super/flags/election-cycle',
+      { year: cycleYear.value, date: cycleDate.value, kind: cycleKind.value })).data
+    showCycle(next)
+    setElectionCycle(next)
+    cycleSaved.value = true
+  } catch (e: any) {
+    cycleError.value = e?.response?.data?.message ?? t('super.dashboard.cycle.error')
+  } finally {
+    cycleBusy.value = false
+  }
+}
+
 onMounted(() => {
   fetchLoad()
   fetchFlag()
+  fetchCycle()
 })
 </script>
 
@@ -211,6 +248,38 @@ onMounted(() => {
       <p class="m-0 mt-2 text-xs text-slate-500">{{ $t('super.dashboard.moderation.comments') }}</p>
       <p v-if="modeSaved" class="m-0 mt-1 text-xs text-green-700" data-test="text-mode-saved">{{ $t('super.dashboard.moderation.saved') }}</p>
       <p v-if="modeError" class="m-0 mt-1 text-xs text-red-700">{{ modeError }}</p>
+    </section>
+
+    <section class="mb-8 rounded-lg border border-slate-200 bg-white p-5" data-test="cycle-card">
+      <h2 class="font-semibold text-slate-800">{{ $t('super.dashboard.cycle.heading') }}</h2>
+      <p class="m-0 mt-1 text-sm text-slate-600">{{ $t('super.dashboard.cycle.blurb') }}</p>
+      <form v-if="cycle" class="mt-3 flex flex-wrap items-end gap-3 text-sm" @submit.prevent="saveCycle">
+        <label class="flex flex-col gap-1 font-semibold text-slate-700">
+          {{ $t('super.dashboard.cycle.year') }}
+          <input v-model.number="cycleYear" type="number" min="2000" max="2100" step="2" data-test="cycle-year"
+            class="w-28 rounded border border-slate-300 p-2 font-normal text-slate-900" />
+        </label>
+        <label class="flex flex-col gap-1 font-semibold text-slate-700">
+          {{ $t('super.dashboard.cycle.date') }}
+          <input v-model="cycleDate" type="date" data-test="cycle-date"
+            class="rounded border border-slate-300 p-2 font-normal text-slate-900" />
+        </label>
+        <label class="flex flex-col gap-1 font-semibold text-slate-700">
+          {{ $t('super.dashboard.cycle.kind') }}
+          <select v-model="cycleKind" data-test="cycle-kind" class="rounded border border-slate-300 p-2 font-normal text-slate-900">
+            <option value="MIDTERM">{{ $t('super.dashboard.cycle.midterm') }}</option>
+            <option value="GENERAL">{{ $t('super.dashboard.cycle.general') }}</option>
+          </select>
+        </label>
+        <button type="submit" :disabled="cycleBusy" data-test="cycle-save"
+          class="rounded bg-slate-800 px-4 py-2 text-white hover:bg-slate-900 disabled:opacity-60">
+          {{ cycleBusy ? $t('common.saving') : $t('common.save') }}
+        </button>
+      </form>
+      <p v-if="cycle" class="m-0 mt-2 text-xs text-slate-500" data-test="cycle-prefix">{{ $t('super.dashboard.cycle.prefix', { prefix: cycle.titlePrefix }) }}</p>
+      <p v-else class="m-0 mt-2 text-xs text-slate-500">{{ $t('super.dashboard.cycle.unavailable') }}</p>
+      <p v-if="cycleSaved" class="m-0 mt-1 text-xs text-green-700" data-test="cycle-saved">{{ $t('super.dashboard.cycle.saved') }}</p>
+      <p v-if="cycleError" class="m-0 mt-1 text-xs text-red-700">{{ cycleError }}</p>
     </section>
 
     <DemoAccountCard />

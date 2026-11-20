@@ -718,6 +718,19 @@
         "comments": "I commenti pubblici sono diversi: lì, No mantiene il commento privato. I nomi dei candidati non vengono mai controllati.",
         "saved": "Salvato: in vigore ora.",
         "error": "Impossibile cambiare la moderazione."
+      },
+      "cycle": {
+        "heading": "Ciclo elettorale",
+        "blurb": "L'elezione a cui appartengono le schede del sito. I titoli iniziano con anno e tipo, e le mappe degli Stati la seguono. Cambialo quando le schede del prossimo ciclo sono caricate.",
+        "year": "Anno",
+        "date": "Giorno delle elezioni",
+        "kind": "Tipo",
+        "midterm": "Di metà mandato",
+        "general": "Generale (presidenziale)",
+        "prefix": "I titoli delle schede iniziano con «{prefix}».",
+        "saved": "Salvato. Le mappe ora usano questo ciclo.",
+        "error": "Impossibile salvare il ciclo elettorale",
+        "unavailable": "Impossibile caricare il ciclo elettorale."
       }
     },
     "adminRequests": {

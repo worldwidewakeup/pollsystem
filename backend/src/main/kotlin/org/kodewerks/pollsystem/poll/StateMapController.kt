@@ -78,7 +78,8 @@ class StateMapController(
     private val elections: ElectionRepository,
     private val candidates: CandidateRepository,
     private val measures: BallotMeasureRepository,
-    private val access: ResultsAccess
+    private val access: ResultsAccess,
+    private val cycle: org.kodewerks.pollsystem.cycle.ElectionCycleService
 ) {
     private val visible = setOf(PollStatus.PUBLISHED, PollStatus.CLOSED)
 
@@ -91,14 +92,16 @@ class StateMapController(
     ): StateMapDto {
         val st = states.findByInitial(state.uppercase())
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown state: $state")
-        // The launch-content title shapes (scripts/launch-content/load-state.bash).
-        val districtTitle = Regex("^2026 Midterm ${Regex.escape(st.name)} District (\\d+)$")
+        // The launch-content title shapes (scripts/launch-content/load-state.bash),
+        // for the current cycle (V47): "2026 Midterm Washington District 2".
+        val prefix = cycle.current().titlePrefix
+        val districtTitle = Regex("^${Regex.escape(prefix)} ${Regex.escape(st.name)} District (\\d+)$")
         val shown = elections.findAll().filter { it.status in visible }
-        val atLarge = shown.firstOrNull { it.title == "2026 Midterm ${st.name}" }
+        val atLarge = shown.firstOrNull { it.title == "$prefix ${st.name}" }
         val districts = shown.mapNotNull { e -> districtTitle.find(e.title)?.let { it.groupValues[1].toInt() to e } }
             .sortedBy { it.first }
             .ifEmpty { listOfNotNull(atLarge?.let { 1 to it }) }
-        val stateMeasures = shown.filter { it.title.startsWith("2026 Midterm · ${st.name}:") || it.id == atLarge?.id }
+        val stateMeasures = shown.filter { it.title.startsWith("$prefix · ${st.name}:") || it.id == atLarge?.id }
             .flatMap { measures.findByElectionId(it.id) }
             .filter { it.status in visible }
             .sortedBy { it.id }

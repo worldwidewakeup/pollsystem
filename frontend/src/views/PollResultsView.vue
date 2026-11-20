@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { stateMapFor } from '@/stateMaps'
+import { useElectionCycle } from '@/composables/useElectionCycle'
 import ScrollEnds from '@/components/ScrollEnds.vue'
 import PublicCommentsList from '../components/PublicCommentsList.vue'
 import RankedRaceResults, { type RankedRace } from '@/components/RankedRaceResults.vue'
@@ -126,8 +127,9 @@ const id = computed(() => Number(route.params.id))
 
 const qData = ref<QuestionnaireResultsDto | null>(null)
 const eData = ref<ElectionResultsDto | null>(null)
-// A 2026 midterm ballot in a state with a district map links to it (/maps/WA).
-const stateMap = computed(() => stateMapFor(eData.value?.title))
+// A current-cycle ballot in a state with a district map links to it (/maps/WA).
+const electionCycle = useElectionCycle()
+const stateMap = computed(() => stateMapFor(eData.value?.title, electionCycle.value?.titlePrefix))
 const bData = ref<BallotMeasureResultsDto | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)

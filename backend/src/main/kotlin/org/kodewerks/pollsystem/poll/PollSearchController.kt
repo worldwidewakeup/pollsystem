@@ -159,7 +159,8 @@ class PollSearchController(
             val rows = purviewByPoll[kind to pollId].orEmpty()
             return rows.isEmpty() || rows.any { it.scopeLevel == ScopeLevel.NATIONAL }   // no declared purview = nationwide
         }
-        val districtTitle = Regex("""Midterm\s+(.+?)\s+District\s+(\d+)\s*$""", RegexOption.IGNORE_CASE)
+        // Any year, midterm or presidential ("General", V47).
+        val districtTitle = Regex("""(?:Midterm|General)\s+(.+?)\s+District\s+(\d+)\s*$""", RegexOption.IGNORE_CASE)
         /** A district ballot of one state whose district touches the searched county. */
         fun districtBallotMatches(electionId: Long, title: String): Boolean {
             if (countyDistricts.isEmpty()) return false

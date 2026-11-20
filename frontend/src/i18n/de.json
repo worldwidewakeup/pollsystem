@@ -718,6 +718,19 @@
         "comments": "Öffentliche Kommentare sind anders: Dort bleibt der Kommentar bei Nein privat. Kandidatennamen werden nie geprüft.",
         "saved": "Gespeichert: gilt sofort.",
         "error": "Die Moderation konnte nicht geändert werden."
+      },
+      "cycle": {
+        "heading": "Wahlzyklus",
+        "blurb": "Die Wahl, zu der die Stimmzettel der Seite gehören. Ihre Titel beginnen mit Jahr und Art, und die Bundesstaatenkarten folgen ihr. Ändern, sobald die Stimmzettel des nächsten Zyklus geladen sind.",
+        "year": "Jahr",
+        "date": "Wahltag",
+        "kind": "Art",
+        "midterm": "Zwischenwahl",
+        "general": "Hauptwahl (Präsidentschaft)",
+        "prefix": "Stimmzettel-Titel beginnen mit „{prefix}“.",
+        "saved": "Gespeichert. Die Karten nutzen jetzt diesen Zyklus.",
+        "error": "Der Wahlzyklus konnte nicht gespeichert werden",
+        "unavailable": "Der Wahlzyklus konnte nicht geladen werden."
       }
     },
     "adminRequests": {

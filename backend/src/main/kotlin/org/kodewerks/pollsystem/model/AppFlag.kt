@@ -31,5 +31,15 @@ data class AppFlag(
 
     /** Moderation (V45): BLOCK or WARN for listed words outside comments; null = configured. */
     @Column(name = "text_mode")
-    val textMode: String? = null
+    val textMode: String? = null,
+
+    /** The current election cycle (V47): its year, election day and kind (MIDTERM or GENERAL). */
+    @Column(name = "election_year", nullable = false)
+    val electionYear: Int = 2026,
+
+    @Column(name = "election_date", nullable = false)
+    val electionDate: java.time.LocalDate = java.time.LocalDate.of(2026, 11, 3),
+
+    @Column(name = "election_kind", nullable = false)
+    val electionKind: String = "MIDTERM"
 )

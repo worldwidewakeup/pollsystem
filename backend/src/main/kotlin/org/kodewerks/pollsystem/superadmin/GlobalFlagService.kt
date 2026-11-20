@@ -28,4 +28,9 @@ class GlobalFlagService(private val flags: AppFlagRepository) {
     @Transactional
     fun setTextMode(mode: String, byUserId: Long): AppFlag =
         flags.save(current().copy(textMode = mode, updatedAt = Instant.now(), updatedBy = byUserId))
+
+    @Transactional
+    fun setElectionCycle(year: Int, date: java.time.LocalDate, kind: String, byUserId: Long): AppFlag =
+        flags.save(current().copy(electionYear = year, electionDate = date, electionKind = kind,
+            updatedAt = Instant.now(), updatedBy = byUserId))
 }

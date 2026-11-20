@@ -56,10 +56,15 @@ export const STATE_MAPS: Record<string, string> = {
   Wyoming: 'WY',
 }
 
-/** The map for a 2026 midterm ballot's state, from its title ("2026 Midterm Washington District 2"). */
-export function stateMapFor(title: string | undefined): { name: string; code: string } | null {
-  if (!title?.startsWith('2026 Midterm')) return null
-  const name = Object.keys(STATE_MAPS).find(n => new RegExp(`^2026 Midterm (· )?${n}( District \\d+|:|$)`).test(title))
+/**
+ * The map for a ballot's state, from its title and the current cycle's title
+ * prefix (V47; e.g. "2026 Midterm Washington District 2" with "2026 Midterm").
+ * No prefix yet (the cycle is still loading) = no map.
+ */
+export function stateMapFor(title: string | undefined, prefix: string | null | undefined): { name: string; code: string } | null {
+  if (!prefix || !title?.startsWith(prefix)) return null
+  const p = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const name = Object.keys(STATE_MAPS).find(n => new RegExp(`^${p} (· )?${n}( District \\d+|:|$)`).test(title))
   return name ? { name, code: STATE_MAPS[name] } : null
 }
 

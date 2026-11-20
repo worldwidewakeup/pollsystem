@@ -718,6 +718,19 @@
         "comments": "Comentários públicos são diferentes: neles, Não mantém o comentário privado. Nomes de candidatos nunca são verificados.",
         "saved": "Salvo: já em vigor.",
         "error": "Não foi possível alterar a moderação."
+      },
+      "cycle": {
+        "heading": "Ciclo eleitoral",
+        "blurb": "A eleição à qual pertencem as cédulas do site. Os títulos começam com o ano e o tipo, e os mapas estaduais a seguem. Mude quando as cédulas do próximo ciclo forem carregadas.",
+        "year": "Ano",
+        "date": "Dia da eleição",
+        "kind": "Tipo",
+        "midterm": "De meio de mandato",
+        "general": "Geral (presidencial)",
+        "prefix": "Os títulos das cédulas começam com “{prefix}”.",
+        "saved": "Salvo. Os mapas agora usam este ciclo.",
+        "error": "Não foi possível salvar o ciclo eleitoral",
+        "unavailable": "Não foi possível carregar o ciclo eleitoral."
       }
     },
     "adminRequests": {

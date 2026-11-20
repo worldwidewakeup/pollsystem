@@ -114,4 +114,36 @@ class StateMapTest : AbstractIntegrationTest() {
         assertThat(vt.districts[0].candidates.map { it.name to it.pct }).containsExactly("Ann" to 75, "Bob" to 25, "Cy" to 0)
         assertThat(vt.measures.map { it.title }).containsExactly("VT Measure 1")
     }
+
+    @Autowired private lateinit var cycle: org.kodewerks.pollsystem.cycle.ElectionCycleController
+
+    /** V47: the map finds the current cycle's ballots; a super switches the cycle (2026-11-20). */
+    @Test
+    fun `the map follows the election cycle setting, and only a valid cycle can be set`() {
+        val c = fixtures.createUser(access = AccessLevel.CREATOR, emailPrefix = "map-cycle")
+        val sup = AppUserDetails(fixtures.createUser(access = AccessLevel.SUPER, emailPrefix = "map-cycle-super"))
+        val y2026 = election(c, "2026 Midterm Wyoming", listOf("Ann" to "Democratic"), "U.S. Representative, Cycle 2026")
+        val y2028 = election(c, "2028 General Wyoming", listOf("Bob" to "Republican"), "U.S. Representative, Cycle 2028")
+        val default = cycle.get()
+        assertThat(default.titlePrefix).isEqualTo("2026 Midterm")
+        assertThat(map.results("WY", null, sup).districts.map { it.electionId }).containsExactly(y2026)
+        try {
+            val set = cycle.set(org.kodewerks.pollsystem.cycle.SetElectionCycleRequest(2028, LocalDate.of(2028, 11, 7),
+                org.kodewerks.pollsystem.cycle.ElectionKind.GENERAL), sup)
+            assertThat(set.titlePrefix).isEqualTo("2028 General")
+            assertThat(map.results("WY", null, sup).districts.map { it.electionId }).containsExactly(y2028)
+            for ((year, date, kind) in listOf(
+                Triple(2028, LocalDate.of(2028, 11, 7), org.kodewerks.pollsystem.cycle.ElectionKind.MIDTERM),   // presidential year
+                Triple(2030, LocalDate.of(2030, 11, 5), org.kodewerks.pollsystem.cycle.ElectionKind.GENERAL),   // midterm year
+                Triple(2027, LocalDate.of(2027, 11, 2), org.kodewerks.pollsystem.cycle.ElectionKind.MIDTERM),   // odd year
+                Triple(2030, LocalDate.of(2031, 11, 4), org.kodewerks.pollsystem.cycle.ElectionKind.MIDTERM),   // day outside the year
+            )) {
+                org.assertj.core.api.Assertions.assertThatThrownBy {
+                    cycle.set(org.kodewerks.pollsystem.cycle.SetElectionCycleRequest(year, date, kind), sup)
+                }.describedAs("$year $kind $date").isInstanceOf(org.springframework.web.server.ResponseStatusException::class.java)
+            }
+        } finally {
+            cycle.set(org.kodewerks.pollsystem.cycle.SetElectionCycleRequest(default.year, default.date, default.kind), sup)
+        }
+    }
 }

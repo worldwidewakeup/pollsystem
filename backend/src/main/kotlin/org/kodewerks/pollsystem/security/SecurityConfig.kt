@@ -65,6 +65,8 @@ class SecurityConfig(
                     "/api/counties/**",
                     "/api/zipcodes/**",
                     "/api/poll-types/**",
+                    // The current election cycle (year, day, kind): the map pages read it.
+                    "/api/election-cycle",
                     "/api/polls/search",
                     "/api/polls/search/**",
                     "/api/polls/*/*/results/**",

@@ -7,6 +7,7 @@ midterms needed. The steps are numbered in the order they depend on each
 other.
 
 **Status of automation:** each step below names the script that exists today.
+The site's current cycle is already a setting (section 4).
 Where several scripts or hand steps chain together, the last section proposes
 one driver (`scripts/election-cycle/`) to run them in order. It isn't built
 yet.
@@ -188,23 +189,33 @@ change.
 
 ---
 
-## 4. Year-specific code to update each cycle
+## 4. Year-specific code
 
-These still say 2026 or the 119th Congress, and must change (or be made
-general) for the next cycle:
+**The site's current cycle is a setting** (V47, 2026-11-20): year, election
+day and kind (Midterm or General), changed by a super on the Super
+dashboard's **Election cycle** card. Ballot titles start with its prefix
+("2026 Midterm", "2028 General"). What reads it:
+
+| Where | Uses |
+|---|---|
+| `backend/…/poll/StateMapController.kt` | finds a state's ballots for `/maps/XX` by the prefix |
+| `frontend/src/stateMaps.ts` (+ `useElectionCycle`) | the results page's link to the state map |
+| `backend/…/poll/PollSearchController.kt` | county → district ballots: matches "Midterm" or "General", any year |
+
+**Switch the setting only when the new cycle's ballots are loaded and
+published**: the maps then move to them. Preparing the next cycle doesn't
+need it.
+
+Still fixed to 2026 (the driver's per-cycle file replaces these):
 
 | Where | What's fixed |
 |---|---|
 | `scripts/launch-content/build-state.py` | `P = "2026 Midterm · "`, `DATE = "2026-11-03"`, output file names, `SEATS` |
 | `scripts/launch-content/load-state.bash` | the `xx-2026-*.json` file names |
-| `frontend/src/stateMaps.ts` | the title pattern `^2026 Midterm …` |
-| `backend/…/poll/StateMapController.kt` | the title pattern `^2026 Midterm <State> District (\d+)$` |
-| `backend/…/poll/PollSearchController.kt` | (fine: matches "Midterm <State> District <n>" for any year) |
-| `backend/…/poll/ResultsPrivacy.kt`, `PollHistoryService.kt` | check what their 2026 references are for before changing |
 | `scripts/maps/build-state-map.py`, `district-counties.py` | default Census file names (`cd119`) |
 
-The driver's first job should be a single cycle setting (year, date, Congress
-number) that these read, so the next cycle changes one file, not seven.
+`ResultsPrivacy.kt` and `PollHistoryService.kt` mention 2026 only as dates
+of decisions in comments.
 
 ---
 
@@ -245,9 +256,10 @@ yours: the driver only reports what's missing.
 
 ## 6. Open questions
 
-- Should the cycle's year live in code (one constant) or in the database (a
-  setting a super can change)?
-- Presidential years: one ballot per state with the President race added
-  to the statewide election, or a separate poll?
-- Old cycles: archive the previous midterm's polls when the new cycle loads,
-  or keep them searchable as closed?
+Decided 2026-11-20:
+
+- **The cycle's year** lives in the database, as a setting a super changes
+  (V47).
+- **Presidential years:** the President race is added to each state's
+  statewide election, with no separate poll.
+- **Old cycles** stay searchable as closed polls; they aren't archived.

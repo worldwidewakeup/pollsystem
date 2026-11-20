@@ -718,6 +718,19 @@
         "comments": "Los comentarios públicos son distintos: allí, No mantiene el comentario privado. Los nombres de los candidatos nunca se revisan.",
         "saved": "Guardado: vigente ya.",
         "error": "No se pudo cambiar la moderación."
+      },
+      "cycle": {
+        "heading": "Ciclo electoral",
+        "blurb": "La elección a la que pertenecen las papeletas del sitio. Los títulos empiezan con su año y tipo, y los mapas estatales la siguen. Cámbiela cuando se carguen las papeletas del próximo ciclo.",
+        "year": "Año",
+        "date": "Día de la elección",
+        "kind": "Tipo",
+        "midterm": "De medio mandato",
+        "general": "General (presidencial)",
+        "prefix": "Los títulos de las papeletas empiezan con «{prefix}».",
+        "saved": "Guardado. Los mapas usan ahora este ciclo.",
+        "error": "No se pudo guardar el ciclo electoral",
+        "unavailable": "No se pudo cargar el ciclo electoral."
       }
     },
     "adminRequests": {

@@ -763,6 +763,19 @@
         "comments": "Offentlige kommentarer er annerledes: der holder nei kommentaren privat. Kandidatnavn sjekkes aldri.",
         "saved": "Lagret: gjelder nå.",
         "error": "Kunne ikke endre modereringen."
+      },
+      "cycle": {
+        "heading": "Valgsyklus",
+        "blurb": "Valget nettstedets stemmesedler hører til. Titlene starter med år og type, og delstatskartene følger det. Endre det når neste syklus' stemmesedler er lastet inn.",
+        "year": "År",
+        "date": "Valgdag",
+        "kind": "Type",
+        "midterm": "Mellomvalg",
+        "general": "Hovedvalg (presidentvalg)",
+        "prefix": "Stemmeseddeltitler starter med «{prefix}».",
+        "saved": "Lagret. Kartene bruker nå denne syklusen.",
+        "error": "Kunne ikke lagre valgsyklusen",
+        "unavailable": "Valgsyklusen kunne ikke lastes inn."
       }
     },
     "adminRequests": {

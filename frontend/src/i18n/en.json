@@ -925,6 +925,19 @@
         "comments": "Public comments are different: there, No keeps the comment private. Candidates' names are never checked.",
         "saved": "Saved: in force now.",
         "error": "Couldn't change the moderation setting."
+      },
+      "cycle": {
+        "heading": "Election cycle",
+        "blurb": "The election the site's ballots belong to. Ballot titles start with its year and kind, and the state maps follow it. Change it when the next cycle's ballots are loaded.",
+        "year": "Year",
+        "date": "Election day",
+        "kind": "Kind",
+        "midterm": "Midterm",
+        "general": "General (presidential)",
+        "prefix": "Ballot titles start with “{prefix}”.",
+        "saved": "Saved. The maps now use this cycle.",
+        "error": "Couldn't save the election cycle",
+        "unavailable": "The election cycle couldn't be loaded."
       }
     },
     "adminRequests": {

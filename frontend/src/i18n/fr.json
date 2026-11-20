@@ -763,6 +763,19 @@
         "comments": "Les commentaires publics sont différents : Non garde le commentaire privé. Les noms des candidats ne sont jamais vérifiés.",
         "saved": "Enregistré : en vigueur.",
         "error": "Impossible de modifier la modération."
+      },
+      "cycle": {
+        "heading": "Cycle électoral",
+        "blurb": "L'élection à laquelle appartiennent les bulletins du site. Leurs titres commencent par son année et son type, et les cartes des États la suivent. Changez-le quand les bulletins du prochain cycle sont chargés.",
+        "year": "Année",
+        "date": "Jour de l'élection",
+        "kind": "Type",
+        "midterm": "De mi-mandat",
+        "general": "Générale (présidentielle)",
+        "prefix": "Les titres des bulletins commencent par « {prefix} ».",
+        "saved": "Enregistré. Les cartes utilisent maintenant ce cycle.",
+        "error": "Impossible d'enregistrer le cycle électoral",
+        "unavailable": "Le cycle électoral n'a pas pu être chargé."
       }
     },
     "adminRequests": {

@@ -25,8 +25,9 @@ narrower choice gives a shorter list:
    a state's midterm ballots), plus every poll for a county or zipcode in those
    states, and fills in the county and zipcode lists.
 2. **County.** Optionally pick counties within those states. This finds the
-   polls for those counties and for zipcodes in them. Type to find a county by
-   name.
+   polls for those counties and for zipcodes in them, plus the state's
+   congressional district ballots for the districts that cover the county
+   (in Washington so far). Type to find a county by name.
 3. **Zipcodes.** Optionally pick zipcodes. This finds only the polls for exactly
    those zipcodes. If you haven't picked a state, you can type a single zipcode
    here directly.
@@ -35,7 +36,10 @@ The narrowest choice you make is the one that counts: picking zipcodes searches
 just those zipcodes, even if you also picked their county.
 
 A poll for a bigger area doesn't show up for a smaller one: a statewide ballot
-isn't listed when you search a zipcode, so pick the state to find it.
+isn't listed when you search a zipcode, so pick the state to find it. The
+exception is a district ballot ("2026 Midterm Washington District 2"): picking
+a county also finds the districts that cover it. A county split between
+districts finds each of them.
 Nationwide polls show up only when you don't pick a place.
 
 The state, county and zipcode lists let you select several at once:

@@ -55,7 +55,8 @@ class PollSearchController(
     private val blockService: PollBlockService,
     private val participation: PollParticipationService,
     private val includes: ElectionIncludes,
-    private val states: org.kodewerks.pollsystem.repository.StateRepository
+    private val states: org.kodewerks.pollsystem.repository.StateRepository,
+    private val jdbc: org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 ) {
 
     /** Maps the search-row `type` string back to the block-table enum. */
@@ -128,6 +129,15 @@ class PollSearchController(
             else -> emptySet()
         }
         val searchedStates: Set<Long> = if (statePicked) stateIds!!.toSet() else emptySet()
+        // A county search also finds the state's district ballots ("2026 Midterm
+        // Washington District 2") for the districts that touch the county
+        // (V46 district_counties, decided 2026-11-20). Those ballots keep their
+        // statewide area; this is a search aid only. A split county finds each
+        // district it touches.
+        val countyDistricts: Set<Pair<Long, Int>> = if (countyPicked) jdbc.query(
+            "SELECT DISTINCT state_id, district FROM district_counties WHERE county_id IN (:ids)",
+            mapOf("ids" to searchedCounties)
+        ) { rs, _ -> rs.getLong("state_id") to rs.getInt("district") }.toSet() else emptySet()
         // Everything per poll is loaded once for the whole search, not per poll:
         // on prod each query crosses the network, and one-per-poll took 6–50 s
         // (2026-10-26).
@@ -148,6 +158,17 @@ class PollSearchController(
         fun isNationwide(kind: PollKind, pollId: Long): Boolean {
             val rows = purviewByPoll[kind to pollId].orEmpty()
             return rows.isEmpty() || rows.any { it.scopeLevel == ScopeLevel.NATIONAL }   // no declared purview = nationwide
+        }
+        val districtTitle = Regex("""Midterm\s+(.+?)\s+District\s+(\d+)\s*$""", RegexOption.IGNORE_CASE)
+        /** A district ballot of one state whose district touches the searched county. */
+        fun districtBallotMatches(electionId: Long, title: String): Boolean {
+            if (countyDistricts.isEmpty()) return false
+            val m = districtTitle.find(title) ?: return false
+            val row = rowsOf(PollKind.ELECTION, electionId).singleOrNull() ?: return false
+            if (row.scopeLevel != ScopeLevel.STATE) return false
+            val stateId = row.stateId ?: return false
+            if (!stateNames[stateId].equals(m.groupValues[1], ignoreCase = true)) return false
+            return (stateId to m.groupValues[2].toInt()) in countyDistricts
         }
         fun purviewIncludesSearch(kind: PollKind, pollId: Long): Boolean {
             val rows = purviewByPoll[kind to pollId].orEmpty()
@@ -224,7 +245,8 @@ class PollSearchController(
                     )
                 ) continue
                 if (!matches(e.creator.email, creatorEmail)) continue
-                if (geoFilter != null && !purviewIncludesSearch(PollKind.ELECTION, e.id)) continue
+                if (geoFilter != null && !purviewIncludesSearch(PollKind.ELECTION, e.id) &&
+                    !districtBallotMatches(e.id, e.title)) continue
                 if (excludeNationwide && isNationwide(PollKind.ELECTION, e.id)) continue
                 results += PollSearchResult(
                     id = e.id,

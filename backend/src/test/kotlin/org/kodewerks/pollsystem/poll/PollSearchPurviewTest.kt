@@ -76,4 +76,44 @@ class PollSearchPurviewTest : AbstractIntegrationTest() {
         // No place: everything, nationwide included.
         assertThat(found()).containsExactlyInAnyOrder(zip98225, zip98226, whatcomCounty, kingCounty, washington, idahoState, nationwide)
     }
+
+    @Autowired private lateinit var elections: org.kodewerks.pollsystem.repository.ElectionRepository
+
+    /** V46: a county search also finds its state's district ballots for the districts touching it (2026-11-20). */
+    @Test
+    fun `a county search finds the district ballots of the districts that touch it`() {
+        val wa = 48L
+        val orState = counties.findAll().first { it.state.initial == "OR" }.state.id
+        val waCounty = { name: String -> counties.findByStateIdIn(listOf(wa)).first { it.name == name }.id }
+        val creator = fixtures.createUser(access = AccessLevel.CREATOR, emailPrefix = "district-search")
+        val eType = pollTypes.findAll().first { it.name == "Election" }
+        val tag = System.nanoTime()
+        fun ballot(title: String, stateId: Long): Long {
+            val e = elections.save(org.kodewerks.pollsystem.model.Election(creator = creator, pollType = eType,
+                title = "Place $tag $title", date = java.time.LocalDate.now(), zipcode = null,
+                status = PollStatus.PUBLISHED, closeDate = null))
+            purviews.save(PollPurview(pollType = PollKind.ELECTION, pollId = e.id, scopeLevel = ScopeLevel.STATE, stateId = stateId))
+            return e.id
+        }
+        val d1 = ballot("2026 Midterm Washington District 1", wa)
+        val d2 = ballot("2026 Midterm Washington District 2", wa)
+        val d3 = ballot("2026 Midterm Washington District 3", wa)
+        val d8 = ballot("2026 Midterm Washington District 8", wa)
+        val statewide = ballot("2026 Midterm · Washington: statewide measures", wa)
+        val oregon2 = ballot("2026 Midterm Oregon District 2", orState)
+
+        fun found(zips: List<String>? = null, countyIds: List<Long>? = null, stateIds: List<Long>? = null) =
+            controller.search("Place $tag", zips, countyIds, stateIds, null, null, null, false).map { it.id }.toSet()
+
+        // Whatcom lies wholly in District 2: that ballot only (not the statewide one, not Oregon's District 2).
+        assertThat(found(stateIds = listOf(wa), countyIds = listOf(waCounty("Whatcom")))).containsExactly(d2)
+        assertThat(found(countyIds = listOf(waCounty("Whatcom")))).containsExactly(d2)
+        // Snohomish is split among Districts 1, 2 and 8: each of them.
+        assertThat(found(countyIds = listOf(waCounty("Snohomish")))).containsExactlyInAnyOrder(d1, d2, d8)
+        // The state alone still finds every Washington ballot (their area is the state).
+        assertThat(found(stateIds = listOf(wa))).containsExactlyInAnyOrder(d1, d2, d3, d8, statewide)
+        // A zipcode pick lists only polls for exactly those zipcodes, as before.
+        assertThat(found(zips = listOf("98225"))).isEmpty()
+        assertThat(oregon2).isNotIn(found(countyIds = listOf(waCounty("Whatcom"))))
+    }
 }

@@ -61,6 +61,60 @@ logged.
 
 ---
 
+## 2026-11-20 — The election cycle becomes a setting (runbook step 1)
+
+**Requested:**
+
+> 1b, 2a, 3b, go with your order
+
+The answers to the runbook's three open questions:
+- **1b:** the cycle's year lives in the database, as a setting a super
+  changes.
+- **2a:** in presidential years the President race goes on each statewide
+  ballot.
+- **3b:** old cycles stay searchable as closed polls.
+
+The order: (1) one cycle setting instead of the hard-coded "2026", (2)
+`status`/`check`, (3) district lists for redrawn states, (4) wrap the
+existing scripts.
+
+**Changed:**
+
+- **V47:** `app_flags` gains `election_year`, `election_date` and
+  `election_kind` (`MIDTERM` or `GENERAL`), defaulting to 2026,
+  2026-11-03 and MIDTERM.
+- **New `cycle/ElectionCycle.kt`:**
+  - public `GET /api/election-cycle` returns year, date, kind and the
+    title prefix ("2026 Midterm");
+  - `PUT /api/super/flags/election-cycle` changes it. It refuses odd years,
+    a day outside the year, Midterm in a presidential year and General
+    otherwise.
+- **The state map** (`StateMapController`) and **the results page's map
+  link** (`stateMapFor` + the new `useElectionCycle`) find ballots by the
+  prefix instead of "2026 Midterm".
+- **County → district search** also matches "General".
+- **The Super dashboard** gets an **Election cycle** card (year, election
+  day, kind, Save) that shows the title prefix. Labels in 9 languages.
+- **The runbook:** section 4 now lists what reads the setting and what's
+  still fixed (the content scripts, until the driver's per-cycle file), and
+  the open questions are recorded as decided.
+
+**Verified:**
+
+- StateMapTest 4 pass. The new test covers the map following a switch to
+  2028 General and back, and the refused cycles. PollSearchPurviewTest 2
+  pass.
+- vue-tsc clean; frontend 218 pass, including `stateMapFor` with 2028
+  General and with no prefix.
+- On local: V47 applied, and `/api/election-cycle` returns 2026 Midterm.
+- The dashboard card renders (screenshot). A Washington district's results
+  page still links to `/maps/WA`.
+- Nothing was saved, so local settings are unchanged.
+
+**Commit:** `66f5507`
+
+---
+
 ## 2026-11-20 — Runbook for setting up a new election cycle
 
 **Requested:**

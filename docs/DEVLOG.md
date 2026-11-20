@@ -61,6 +61,47 @@ logged.
 
 ---
 
+## 2026-11-20 — Election-cycle driver: `status` and `check` (runbook step 2)
+
+**Requested:** step 2 of the order agreed above ("go with your order").
+
+**Changed:**
+
+- **New `scripts/election-cycle/cycle.py`.** It reads
+  `docs/launch-content/<year>-cycle.json` and only reads; it changes
+  nothing.
+  - **`status`:** in the repo, per state: seats, research notes, content
+    files, map mode, and district→county rows. Then a list of what's
+    missing.
+  - **`check local|staging|prod|URL`:** on a running site, through public
+    endpoints. It reports the site's cycle (or "older than V47", assuming
+    2026), each state's published ballots numbered 1..N for its seats, and
+    its map's district count.
+  - Exit 1 when something is missing.
+- **`docs/launch-content/2026-cycle.json`:** generated from the map files'
+  recorded sources: 41 states on Census lines, 8 on official plans (AL,
+  CA, FL, LA, NC, OH, TX, UT), and Tennessee a grid.
+- **`scripts/election-cycle/apportionment-2020.json`:** the House seats,
+  taken from `build-state.py`'s `SEATS` (435 in total).
+- The runbook marks `status` and `check` as built.
+
+**Verified:**
+
+- `status`: every state has research, content files and a map. Missing:
+  district→county rows for every multi-seat state except WA, and
+  Tennessee's official map.
+- WA, CA and CO's research lives in the older `<state>-2026-general.md`
+  files; `status` now accepts those.
+- `check` on local, staging and prod: **435** published 2026 ballots
+  each, every state numbered 1..N, every map matching its seats, "All
+  good".
+- Staging and prod answered "older than V47" as expected. Local was run
+  from a container on the host network.
+
+**Commit:** `6bd92e5`
+
+---
+
 ## 2026-11-20 — The election cycle becomes a setting (runbook step 1)
 
 **Requested:**

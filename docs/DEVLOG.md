@@ -61,6 +61,61 @@ logged.
 
 ---
 
+## 2026-11-20 — District ↔ county rows for every state but Tennessee (runbook step 3)
+
+**Requested:** step 3 of the agreed order ("go with your order"): district
+lists for the states that redrew, which were missing.
+
+**Changed:**
+
+- **V48:** 3,420 `district_counties` rows.
+  - 34 states come from the Census 119th Congress file (plan `CD119`).
+  - The 8 redrawn states come from their official plans, the same files as
+    their `/maps`: AL2023, CA2025, FL2026, LA2026, NC2025, OH2025, TX2025
+    and UT2026.
+  - Washington was already in V46. Tennessee waits for its plan, so its
+    county searches stay state-only.
+- **New `scripts/maps/plan-district-counties.py`:**
+  - **Shapes:** overlaid on the full-detail 2020 county lines in an
+    equal-area projection. Overlaps under 0.05% of a county and 0.5 km²
+    are dropped as slivers; borderline ones are listed.
+  - **A block assignment file** (Ohio): exact, ignoring water-only blocks.
+- **Bug found and fixed in both scripts:** they stripped " city", so
+  "Richmond city" (VA) would have matched Richmond County. Baltimore city
+  and St. Louis city were merged into their counties the same way, and
+  Virginia's 34 independent cities didn't match at all. Names now keep
+  " city", as the `counties` table does. V46's Washington rows are
+  identical either way.
+- The runbook's step 5 describes both scripts and the checks.
+
+**Verified:**
+
+- **Each plan covers all its counties:** AL 67/67, CA 58/58, FL 67/67,
+  LA 64/64, NC 100/100, OH 88/88, TX 254/254, UT 29/29. District counts
+  match the seats.
+- **Slivers** were all 0.004% of a county or less and under 0.25 km², and
+  were dropped.
+- **California's** borderline overlaps (47–508 km² in Los Angeles, San
+  Bernardino and Riverside) were kept as real splits.
+- **Three coastal overlaps** were checked against land-only outlines, and
+  all are land: St. Bernard ∩ LA-2 40 km², Onslow ∩ NC-1 22 km², Chambers ∩
+  TX-14 13 km². The first and last match the old lines' land splits.
+- **The migration:** a dry run inserted all 3,420 rows (the first draft lost
+  35 to the city names). Flyway applied it on local.
+- **Searches on local:**
+  - Travis TX → 10, 11, 27, 37;
+  - San Francisco → 11, 15;
+  - Franklin OH → 3, 15;
+  - Richmond city VA → 4 (Richmond County → 1);
+  - Davidson TN → none, as intended.
+- `cycle.py status`: only Tennessee is missing (map and rows).
+- PollSearchControllerTest 9, PollSearchPurviewTest 2, StateSearchTest 2
+  and StateMapTest 4 pass.
+
+**Commit:** `52fe8c3`
+
+---
+
 ## 2026-11-20 — Election-cycle driver: `status` and `check` (runbook step 2)
 
 **Requested:** step 2 of the order agreed above ("go with your order").

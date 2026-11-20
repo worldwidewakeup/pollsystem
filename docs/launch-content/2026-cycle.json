@@ -1,139 +1,210 @@
 {
+  "_about": "The 2026 cycle (scripts/election-cycle/cycle.py, docs/ELECTION-CYCLE-SETUP.md). lines: census = the Census file's lines (plan CD119); plan = the state's official plan (planFiles: shapes + district field, or a block assignment file + the state's 2020 blocks); grid = numbered boxes until the plan is found. Plan files are downloaded by hand (you confirm which plan is in force) into tmp/; the downloads list is what `cycle.py fetch` gets.",
   "year": 2026,
   "date": "2026-11-03",
   "kind": "MIDTERM",
   "congress": 119,
   "apportionment": "scripts/election-cycle/apportionment-2020.json",
-  "districtCountyFile": "tab20_cd11920_county20_natl.txt",
+  "downloads": {
+    "counties.json": "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json",
+    "cd.zip": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_cd119_500k.zip",
+    "county-district.txt": "https://www2.census.gov/geo/docs/maps-data/data/rel2020/cd-sld/tab20_cd11920_county20_natl.txt",
+    "tl_2020_us_county.zip": "https://www2.census.gov/geo/tiger/TIGER2020/COUNTY/tl_2020_us_county.zip"
+  },
   "states": {
     "AK": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "AL": {
       "lines": "plan",
-      "source": "Alabama Legislature, 2023 congressional plan (Act 2023-563), via the state ALGeoHub"
+      "source": "Alabama Legislature, 2023 congressional plan (Act 2023-563), via the state ALGeoHub",
+      "plan": "AL2023",
+      "planFiles": {
+        "districts": "tmp/maps/official/AL/al-2023.zip",
+        "field": "DISTRICT"
+      }
     },
     "AR": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "AZ": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "CA": {
       "lines": "plan",
-      "source": "California Legislature, AB 604 (Chapter 96, Statutes of 2025; adopted by Proposition 50 for 2026-2030)"
+      "source": "California Legislature, AB 604 (Chapter 96, Statutes of 2025; adopted by Proposition 50 for 2026-2030)",
+      "plan": "CA2025",
+      "planFiles": {
+        "districts": "tmp/maps/official/CA/ab604.zip",
+        "field": "DISTRICT"
+      }
     },
     "CO": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "CT": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "DE": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "FL": {
       "lines": "plan",
-      "source": "Florida Legislature (EDR), plan EOGPCRP2026 (HB 1-D, Chapter 2026-229)"
+      "source": "Florida Legislature (EDR), plan EOGPCRP2026 (HB 1-D, Chapter 2026-229)",
+      "plan": "FL2026",
+      "planFiles": {
+        "districts": "tmp/maps/official/FL/EOGPCRP2026.zip",
+        "field": "DISTRICT"
+      }
     },
     "GA": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "HI": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "IA": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "ID": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "IL": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "IN": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "KS": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "KY": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "LA": {
       "lines": "plan",
-      "source": "Louisiana Legislature, Act 2 of 2026 (SB 121)"
+      "source": "Louisiana Legislature, Act 2 of 2026 (SB 121)",
+      "plan": "LA2026",
+      "planFiles": {
+        "districts": "tmp/maps/official/LA/act2.zip",
+        "field": "DISTRICT_I"
+      }
     },
     "MA": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "MD": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "ME": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "MI": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "MN": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "MO": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "MS": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "MT": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "NC": {
       "lines": "plan",
-      "source": "North Carolina General Assembly, SB 249 / Session Law 2025-95"
+      "source": "North Carolina General Assembly, SB 249 / Session Law 2025-95",
+      "plan": "NC2025",
+      "planFiles": {
+        "districts": "tmp/maps/official/NC/sl2025-95.zip",
+        "field": "DISTRICT"
+      }
     },
     "ND": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "NE": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "NH": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "NJ": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "NM": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "NV": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "NY": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "OH": {
       "lines": "plan",
-      "source": "Ohio Redistricting Commission, congressional plan adopted 2025-10-31 (block assignment file)"
+      "source": "Ohio Redistricting Commission, congressional plan adopted 2025-10-31 (block assignment file)",
+      "plan": "OH2025",
+      "planFiles": {
+        "baf": "tmp/maps/official/OH/adopted-430.zip",
+        "blocks": "tmp/maps/blocks/tl_2020_39_tabblock20.zip"
+      }
     },
     "OK": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "OR": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "PA": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "RI": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "SC": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "SD": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "TN": {
       "lines": "grid",
@@ -141,29 +212,48 @@
     },
     "TX": {
       "lines": "plan",
-      "source": "Texas Legislative Council, PLANC2333 (HB 4, 2025; in effect for 2026)"
+      "source": "Texas Legislative Council, PLANC2333 (HB 4, 2025; in effect for 2026)",
+      "plan": "TX2025",
+      "planFiles": {
+        "districts": "tmp/maps/official/TX/planc2333.zip",
+        "field": "District"
+      }
     },
     "UT": {
       "lines": "plan",
-      "source": "Utah Geospatial Resource Center, US Congress Districts 2026 to 2032 (court-ordered Map 1A)"
+      "source": "Utah Geospatial Resource Center, US Congress Districts 2026 to 2032 (court-ordered Map 1A)",
+      "plan": "UT2026",
+      "planFiles": {
+        "districts": "tmp/maps/official/UT/ut-2026.zip",
+        "field": "DISTRICT"
+      }
     },
     "VA": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "VT": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "WA": {
-      "lines": "census"
+      "lines": "census",
+      "excludeCounties": [
+        "53029"
+      ],
+      "plan": "CD119"
     },
     "WI": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "WV": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     },
     "WY": {
-      "lines": "census"
+      "lines": "census",
+      "plan": "CD119"
     }
   }
 }

@@ -6,10 +6,26 @@ maps, and every state's ballots. Written 2026-11-20 from what the 2026
 midterms needed. The steps are numbered in the order they depend on each
 other.
 
-**Status of automation:** each step below names the script that exists today.
-The site's current cycle is already a setting (section 4), and
-`scripts/election-cycle/cycle.py status` / `check ENV` report what's ready
-(section 5).
+**Status of automation (2026-11-20):** the driver
+`scripts/election-cycle/cycle.py` runs every scripted step from one file
+per cycle (section 5). The site's current cycle is a setting (section 4).
+What stays with you: the decisions in section 2, finding the official plans
+of states that redrew, and reviewing the research.
+
+**The short version for a new cycle** (e.g. 2028):
+
+```
+cp docs/launch-content/2026-cycle.json docs/launch-content/2028-cycle.json   # edit: year, date, kind, states' lines and plans
+scripts/election-cycle/cycle.py status --cycle 2028          # what's missing
+scripts/election-cycle/cycle.py fetch --cycle 2028           # Census files
+scripts/election-cycle/cycle.py maps XX … --cycle 2028       # only states whose lines changed
+scripts/election-cycle/cycle.py districts XX … --cycle 2028 --write district_counties_2028
+#   research each state (step 6), then:
+scripts/election-cycle/cycle.py content XX … --cycle 2028
+scripts/election-cycle/cycle.py load local XX … --cycle 2028   # then staging, then prod
+scripts/election-cycle/cycle.py check prod --cycle 2028
+#   publish (--publish), then switch the site's cycle on the Super dashboard
+```
 Where several scripts or hand steps chain together, the last section proposes
 one driver (`scripts/election-cycle/`) to run them in order. It isn't built
 yet.
@@ -252,18 +268,20 @@ docs/launch-content/2028-cycle.json
 }
 ```
 
-Subcommands, each rerunnable and each printing what it still needs from
-you:
+Commands (all built 2026-11-20), each rerunnable:
 
 | Command | Does |
 |---|---|
-| `status` **(built)** | in the repo, per state: seats, research, content files, map (Census lines / plan / grid), district→county rows; lists what's missing |
-| `fetch` | downloads the Census files (boundaries, relationship file, blocks) into `tmp/election-cycle/<year>/` |
-| `maps XX…` | runs `build-state-map.py` in the right mode for each state; updates `STATE_MAPS` |
-| `districts XX…` | writes the `district_counties` migration (Census file, or the state's plan) |
-| `content XX…` | runs `build-state.py` with the cycle's year and date |
-| `load ENV XX… [--publish]` | wraps `load-state.bash` |
-| `check ENV` **(built)** | on a running site (local, staging, prod or a URL), read-only: the site's cycle, each state's published ballots numbered 1..N for its seats, its map's district count |
+| `status` | in the repo, per state: seats, research, content files, map (Census lines / plan / grid), district→county rows; lists what's missing |
+| `check ENV` | on a running site (local, staging, prod or a URL), read-only: the site's cycle, each state's published ballots numbered 1..N for its seats, its map's district count |
+| `fetch` | downloads the cycle file's `downloads` into `tmp/election-cycle/<year>/` |
+| `maps XX…` | `build-state-map.py` in each state's mode (Census lines with any `excludeCounties`, its plan's shapes or block list, or a grid) |
+| `districts XX… [--write NAME]` | district→county SQL that replaces each state's rows (Census file or the state's plan); `--write` makes the next `VNN__NAME.sql` migration |
+| `content XX…` | `build-state.py --cycle`: research → content files |
+| `load ENV XX… [--publish]` | `load-state.bash --cycle`: polls as drafts, existing ones skipped; `--publish` publishes |
+
+Geometry (maps, plan districts) runs in a `python:3.12-slim` container, so
+Docker must be running.
 
 Research (step 6) stays a guided session per state, and decisions stay
 yours: the driver only reports what's missing.

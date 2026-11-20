@@ -50,6 +50,7 @@
     }
   ],
   "houseRankedChoice": true,
+  "rankedInApp": true,
   "house": [
     {
       "district": 0,

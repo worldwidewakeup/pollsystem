@@ -4,7 +4,10 @@
 # the content files build-state.py made, in one environment.
 #
 # Usage:
-#   scripts/launch-content/load-state.bash local|staging|prod XX [XX ...] [--publish]
+#   scripts/launch-content/load-state.bash local|staging|prod XX [XX ...] [--publish] [--cycle YYYY]
+#
+# --cycle picks docs/launch-content/YYYY-cycle.json (default 2026): its
+# xx-YYYY-*.json content files and its ballot titles ("YYYY Midterm ...").
 #
 # Order per state: the statewide election (with its measures) first, then the
 # district ballots, which include it. Rerunnable: existing polls are skipped.
@@ -23,8 +26,17 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 ENV="${1:?local|staging|prod}"; shift
-PUBLISH=false; STATES=()
-for a in "$@"; do [[ "$a" == --publish ]] && PUBLISH=true || STATES+=("${a^^}"); done
+PUBLISH=false; STATES=(); CYCLE=2026; next_is_cycle=false
+for a in "$@"; do
+  if $next_is_cycle; then CYCLE="$a"; next_is_cycle=false
+  elif [[ "$a" == --cycle ]]; then next_is_cycle=true
+  elif [[ "$a" == --publish ]]; then PUBLISH=true
+  else STATES+=("${a^^}"); fi
+done
+CYCLE_FILE="docs/launch-content/$CYCLE-cycle.json"
+[[ -f "$CYCLE_FILE" ]] || { echo "missing $CYCLE_FILE" >&2; exit 1; }
+# "2026 Midterm" / "2028 General": the ballot titles' start.
+PREFIX=$(python3 -c "import json; c = json.load(open('$CYCLE_FILE')); print(c['year'], 'General' if c['kind'] == 'GENERAL' else 'Midterm')")
 case "$ENV" in
   local)   API=${API:-http://localhost:8080};                     TOKEN=.devcontainer/local-content-super-token.secrets.env; NET=(--network host) ;;
   staging) API=${API:-https://pollsystem-backend-staging.fly.dev}; TOKEN=.devcontainer/staging-super-token.secrets.env;   NET=() ;;
@@ -38,7 +50,7 @@ fail=0
 for st in "${STATES[@]}"; do
   lc="${st,,}"
   for part in statewide ballot house; do
-    f="scripts/launch-content/$lc-2026-$part.json"
+    f="scripts/launch-content/$lc-$CYCLE-$part.json"
     [[ -f "$f" ]] || continue
     out=$(py scripts/launch-content/create-polls.py "$f" --api "$API" --token-file "$TOKEN" 2>&1); rc=$?
     echo "$st $part: $(grep -c '^✓ election' <<<"$out") elections, $(grep -c '^✓ ballot measure' <<<"$out") measures created, $(grep -c '^·' <<<"$out") already there$( ((rc)) && echo " ✗ $(grep '✗' <<<"$out" | head -1)")"
@@ -50,11 +62,11 @@ done
 # later isn't marked until the election form can (phase 3), so on local mark it
 # here. Staging and prod were loaded before V44.
 if [[ "$ENV" == local && " ${STATES[*]} " == *" AK "* ]]; then
-  docker exec -i pollsystem-db psql -U polladmin -d pollsystem -qtA <<'SQL' && echo "AK: ranked races marked"
+  docker exec -i pollsystem-db psql -U polladmin -d pollsystem -qtA <<SQL && echo "AK: ranked races marked"
 INSERT INTO ranked_races (election_id, office_id)
 SELECT DISTINCT e.id, c.office_id FROM elections e
 JOIN candidates c ON c.election_id = e.id JOIN offices o ON o.id = c.office_id
-WHERE e.title = '2026 Midterm Alaska' AND o.name LIKE '%(ranked choice)'
+WHERE e.title = '$PREFIX Alaska' AND o.name LIKE '%(ranked choice)'
 ON CONFLICT DO NOTHING;
 SQL
 fi
@@ -72,7 +84,8 @@ rows = json.load(urllib.request.urlopen(req, timeout=60))
 names = '''$names'''.split(chr(10))
 import re
 # Exact title shapes, so 'Virginia' never matches 'West Virginia'.
-def ours(t): return any(n and (t.startswith('2026 Midterm · ' + n + ':') or t == '2026 Midterm ' + n or re.fullmatch(re.escape('2026 Midterm ' + n) + r' District \\d+', t)) for n in names)
+P = '$PREFIX'
+def ours(t): return any(n and (t.startswith(P + ' · ' + n + ':') or t == P + ' ' + n or re.fullmatch(re.escape(P + ' ' + n) + r' District \\d+', t)) for n in names)
 mine = [r for r in rows if r['type'] == 'Election' and r['status'] == 'DRAFT' and ours(r['title'])]
 mine.sort(key=lambda r: (' District ' in r['title'], r['id']))   # statewide first
 print(' '.join(str(r['id']) for r in mine))")

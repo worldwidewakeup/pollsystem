@@ -7,7 +7,9 @@ midterms needed. The steps are numbered in the order they depend on each
 other.
 
 **Status of automation:** each step below names the script that exists today.
-The site's current cycle is already a setting (section 4).
+The site's current cycle is already a setting (section 4), and
+`scripts/election-cycle/cycle.py status` / `check ENV` report what's ready
+(section 5).
 Where several scripts or hand steps chain together, the last section proposes
 one driver (`scripts/election-cycle/`) to run them in order. It isn't built
 yet.
@@ -221,7 +223,10 @@ of decisions in comments.
 
 ## 5. Proposed automation (to build next)
 
-One driver, `scripts/election-cycle/`, around a manifest per cycle:
+One driver, `scripts/election-cycle/cycle.py`, around a file per cycle,
+`docs/launch-content/<year>-cycle.json`. The 2026 one exists; copy it for
+2028. House seats are in `scripts/election-cycle/apportionment-2020.json`.
+Example of a cycle file:
 
 ```
 docs/launch-content/2028-cycle.json
@@ -241,13 +246,13 @@ you:
 
 | Command | Does |
 |---|---|
-| `status` | per state: research ✓/✗, content ✓/✗, map mode, district-county rows, loaded in local/staging/prod, published |
+| `status` **(built)** | in the repo, per state: seats, research, content files, map (Census lines / plan / grid), district→county rows; lists what's missing |
 | `fetch` | downloads the Census files (boundaries, relationship file, blocks) into `tmp/election-cycle/<year>/` |
 | `maps XX…` | runs `build-state-map.py` in the right mode for each state; updates `STATE_MAPS` |
 | `districts XX…` | writes the `district_counties` migration (Census file, or the state's plan) |
 | `content XX…` | runs `build-state.py` with the cycle's year and date |
 | `load ENV XX… [--publish]` | wraps `load-state.bash` |
-| `check ENV` | read-only: every state's ballots exist, titles match the pattern, district counts match `SEATS`, maps present |
+| `check ENV` **(built)** | on a running site (local, staging, prod or a URL), read-only: the site's cycle, each state's published ballots numbered 1..N for its seats, its map's district count |
 
 Research (step 6) stays a guided session per state, and decisions stay
 yours: the driver only reports what's missing.

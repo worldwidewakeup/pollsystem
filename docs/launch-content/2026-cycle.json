@@ -1,0 +1,169 @@
+{
+  "year": 2026,
+  "date": "2026-11-03",
+  "kind": "MIDTERM",
+  "congress": 119,
+  "apportionment": "scripts/election-cycle/apportionment-2020.json",
+  "districtCountyFile": "tab20_cd11920_county20_natl.txt",
+  "states": {
+    "AK": {
+      "lines": "census"
+    },
+    "AL": {
+      "lines": "plan",
+      "source": "Alabama Legislature, 2023 congressional plan (Act 2023-563), via the state ALGeoHub"
+    },
+    "AR": {
+      "lines": "census"
+    },
+    "AZ": {
+      "lines": "census"
+    },
+    "CA": {
+      "lines": "plan",
+      "source": "California Legislature, AB 604 (Chapter 96, Statutes of 2025; adopted by Proposition 50 for 2026-2030)"
+    },
+    "CO": {
+      "lines": "census"
+    },
+    "CT": {
+      "lines": "census"
+    },
+    "DE": {
+      "lines": "census"
+    },
+    "FL": {
+      "lines": "plan",
+      "source": "Florida Legislature (EDR), plan EOGPCRP2026 (HB 1-D, Chapter 2026-229)"
+    },
+    "GA": {
+      "lines": "census"
+    },
+    "HI": {
+      "lines": "census"
+    },
+    "IA": {
+      "lines": "census"
+    },
+    "ID": {
+      "lines": "census"
+    },
+    "IL": {
+      "lines": "census"
+    },
+    "IN": {
+      "lines": "census"
+    },
+    "KS": {
+      "lines": "census"
+    },
+    "KY": {
+      "lines": "census"
+    },
+    "LA": {
+      "lines": "plan",
+      "source": "Louisiana Legislature, Act 2 of 2026 (SB 121)"
+    },
+    "MA": {
+      "lines": "census"
+    },
+    "MD": {
+      "lines": "census"
+    },
+    "ME": {
+      "lines": "census"
+    },
+    "MI": {
+      "lines": "census"
+    },
+    "MN": {
+      "lines": "census"
+    },
+    "MO": {
+      "lines": "census"
+    },
+    "MS": {
+      "lines": "census"
+    },
+    "MT": {
+      "lines": "census"
+    },
+    "NC": {
+      "lines": "plan",
+      "source": "North Carolina General Assembly, SB 249 / Session Law 2025-95"
+    },
+    "ND": {
+      "lines": "census"
+    },
+    "NE": {
+      "lines": "census"
+    },
+    "NH": {
+      "lines": "census"
+    },
+    "NJ": {
+      "lines": "census"
+    },
+    "NM": {
+      "lines": "census"
+    },
+    "NV": {
+      "lines": "census"
+    },
+    "NY": {
+      "lines": "census"
+    },
+    "OH": {
+      "lines": "plan",
+      "source": "Ohio Redistricting Commission, congressional plan adopted 2025-10-31 (block assignment file)"
+    },
+    "OK": {
+      "lines": "census"
+    },
+    "OR": {
+      "lines": "census"
+    },
+    "PA": {
+      "lines": "census"
+    },
+    "RI": {
+      "lines": "census"
+    },
+    "SC": {
+      "lines": "census"
+    },
+    "SD": {
+      "lines": "census"
+    },
+    "TN": {
+      "lines": "grid",
+      "note": "Numbered boxes: TN redrew its congressional districts for 2026; its official map is not added yet"
+    },
+    "TX": {
+      "lines": "plan",
+      "source": "Texas Legislative Council, PLANC2333 (HB 4, 2025; in effect for 2026)"
+    },
+    "UT": {
+      "lines": "plan",
+      "source": "Utah Geospatial Resource Center, US Congress Districts 2026 to 2032 (court-ordered Map 1A)"
+    },
+    "VA": {
+      "lines": "census"
+    },
+    "VT": {
+      "lines": "census"
+    },
+    "WA": {
+      "lines": "census"
+    },
+    "WI": {
+      "lines": "census"
+    },
+    "WV": {
+      "lines": "census"
+    },
+    "WY": {
+      "lines": "census"
+    }
+  }
+}

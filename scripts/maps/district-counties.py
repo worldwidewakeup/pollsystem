@@ -31,7 +31,9 @@ FIPS = {
     '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA',
     '54': 'WV', '55': 'WI', '56': 'WY',
 }
-SUFFIXES = (' County', ' Parish', ' Borough', ' Census Area', ' Municipality', ' City and Borough', ' city')
+# Independent cities keep " city", as in our counties table (V8): "Richmond city"
+# (VA) is not Richmond County; likewise Baltimore city, St. Louis city.
+SUFFIXES = (' County', ' Parish', ' Borough', ' Census Area', ' Municipality', ' City and Borough')
 
 
 def county_name(namelsad: str) -> str:

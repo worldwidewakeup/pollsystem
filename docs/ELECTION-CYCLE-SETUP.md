@@ -138,9 +138,20 @@ own area stays statewide.
 
 - **States on the Census lines:** the `tab20_cdNNN20_county20_natl.txt`
   relationship file for the current Congress.
-- **Redrawn states:** derive the rows from the same official plan used for the
-  map (block assignment → county, or shapes ∩ counties). **Not built yet**:
-  the driver should add it.
+- **Redrawn states:** `scripts/maps/plan-district-counties.py`, from the same
+  official plan used for the map (built 2026-11-20).
+  - **Shapes:** overlaid on the full-detail 2020 county lines
+    (`tl_2020_us_county.zip`). Overlaps under 0.05% of a county and
+    0.5 km² are dropped as slivers, and borderline ones are listed for
+    review.
+  - **Block lists:** exact, ignoring water-only blocks.
+  - **Coastal borderline overlaps:** check them against the land-only
+    county outlines (`cb_2020_us_county_500k.zip`), since a district can
+    meet a county in a bay.
+- **Names:** independent cities keep " city" ("Richmond city" in Virginia is
+  not Richmond County; likewise Baltimore city and St. Louis city), as in the
+  `counties` table.
+- **As of V48:** every multi-seat state except Tennessee has rows.
 - **How it ships:** a migration with a new plan name per change (e.g.
   `CD119`, then `TX2026`). Drop the state's old rows in the same migration.
 

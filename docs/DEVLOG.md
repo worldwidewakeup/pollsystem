@@ -61,6 +61,36 @@ logged.
 
 ---
 
+## 2026-11-22 — The runbook gets a usage reference for every script
+
+**Requested:**
+
+> can we write the usage of the scripts to the docs/ELECTION-CYCLE...md doc?
+
+**Changed (`docs/ELECTION-CYCLE-SETUP.md`):**
+
+- **Section 5, "Proposed automation (to build next)",** was out of date (its
+  example cycle file didn't match the real format). It's now **"5. The
+  scripts":**
+  - **5.1 The cycle file:** an excerpt of 2026's and what each field means.
+  - **5.2 `cycle.py`:** every command, what it reads or writes, and examples.
+  - **5.3 `rehearse.bash`.**
+  - **5.4 The scripts the driver calls:** `rehearsal-inputs.py`,
+    `build-state-map.py`, `district-counties.py`,
+    `plan-district-counties.py`, `build-state.py`, `load-state.bash` and
+    `create-polls.py`.
+  - Plus requirements (python3, Docker, tokens) and how to run `check
+    local` from the Dev Container.
+- **Section 4** no longer lists the content scripts as fixed to 2026.
+
+**Verified:** each documented entry point answers `--help`: all seven
+`cycle.py` commands, `rehearse.bash`, `rehearsal-inputs.py` and
+`create-polls.py`. The options shown match the scripts.
+
+**Commit:** `896cc4b`
+
+---
+
 ## 2026-11-22 — `rehearse.bash`: the cycle rehearsal as an interactive script
 
 **Requested:**

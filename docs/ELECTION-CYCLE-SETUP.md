@@ -295,7 +295,34 @@ yours: the driver only reports what's missing.
 
 ---
 
-## 6. Open questions
+## 6. Rehearsing a cycle (done 2026-11-22)
+
+The real changes aren't known in advance, so a rehearsal invents realistic
+ones that take every path. Run it on **local**: the steps run there anyway,
+maps show up at once, and local can be put back exactly.
+
+1. Snapshot local: `docker exec pollsystem-db pg_dump -U polladmin -d pollsystem -Fc -f /tmp/local-before.dump`.
+2. A throwaway `docs/launch-content/2028-cycle.json` for a few states: one with
+   unchanged lines (ID), one "redrawn" (TX switched from its plan back to the
+   Census lines, which genuinely differ), one with one seat (WY).
+3. Edited research copies in `tmp/rehearsal/research/`: election night moved
+   to the new date, a President race added, a candidate renamed.
+4. `status`, `fetch`, `maps`, `districts --write` (apply the SQL with `psql`,
+   not Flyway, then move the file out of the migrations folder), `content
+   --research-dir tmp/rehearsal/research`, `load local … --publish`.
+5. Switch local's cycle to the rehearsal's (Super dashboard or
+   `PUT /api/super/flags/election-cycle`), then `check local --cycle 2028`,
+   and look at `/maps/TX`, `/maps/TX?year=2026` and a county search.
+6. Put it back: stop the backend, `pg_restore --clean --if-exists
+   --single-transaction`, start it, and delete `frontend/public/maps/2028/`,
+   `scripts/launch-content/*-2028-*.json` and the cycle file.
+
+The 2026-11-22 rehearsal passed every step. Its one surprise was a gap,
+fixed before it ran: maps and district rows weren't kept per cycle.
+
+---
+
+## 7. Open questions
 
 Decided 2026-11-20:
 

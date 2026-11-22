@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { stateMapFor } from '@/stateMaps'
-import { useElectionCycle } from '@/composables/useElectionCycle'
 import ScrollEnds from '@/components/ScrollEnds.vue'
 import PublicCommentsList from '../components/PublicCommentsList.vue'
 import RankedRaceResults, { type RankedRace } from '@/components/RankedRaceResults.vue'
@@ -127,9 +126,8 @@ const id = computed(() => Number(route.params.id))
 
 const qData = ref<QuestionnaireResultsDto | null>(null)
 const eData = ref<ElectionResultsDto | null>(null)
-// A current-cycle ballot in a state with a district map links to it (/maps/WA).
-const electionCycle = useElectionCycle()
-const stateMap = computed(() => stateMapFor(eData.value?.title, electionCycle.value?.titlePrefix))
+// A midterm or presidential ballot links to its state's map for its cycle (/maps/WA?year=2026).
+const stateMap = computed(() => stateMapFor(eData.value?.title))
 const bData = ref<BallotMeasureResultsDto | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -433,7 +431,7 @@ function purviewCount(n: number | null): string {
         {{ $t('results.purviewArea', { area: purviewArea }) }}
       </p>
       <p v-if="stateMap" class="-mt-3 mb-4 text-sm">
-        <router-link :to="`/maps/${stateMap.code}`" class="underline" data-test="state-map-link">{{ $t('stateMap.link', { state: stateMap.name }) }}</router-link>
+        <router-link :to="`/maps/${stateMap.code}?year=${stateMap.year}`" class="underline" data-test="state-map-link">{{ $t('stateMap.link', { state: stateMap.name }) }}</router-link>
       </p>
       <h1 v-else class="mb-4 text-2xl font-semibold text-slate-800">{{ $t('results.heading') }}</h1>
 

@@ -23,6 +23,13 @@ export function useElectionCycle(): Ref<ElectionCycle | null> {
   return cycle
 }
 
+/** The cycle once it has loaded (null if it can't be). */
+export async function loadElectionCycle(): Promise<ElectionCycle | null> {
+  useElectionCycle()
+  try { await loading } catch { /* null below */ }
+  return cycle.value
+}
+
 /** After a super changes it on the dashboard. */
 export function setElectionCycle(next: ElectionCycle) {
   cycle.value = next

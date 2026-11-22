@@ -1,5 +1,5 @@
 /**
- * States with a district map at /maps/XX (public/maps/XX.json, built by
+ * States with a district map at /maps/XX (public/maps/<year>/XX.json, built by
  * scripts/maps/build-state-map.py): every state with a 2026 midterm ballot
  * (2026-11-04). States that redrew for 2026 have numbered boxes for now.
  */
@@ -57,15 +57,17 @@ export const STATE_MAPS: Record<string, string> = {
 }
 
 /**
- * The map for a ballot's state, from its title and the current cycle's title
- * prefix (V47; e.g. "2026 Midterm Washington District 2" with "2026 Midterm").
- * No prefix yet (the cycle is still loading) = no map.
+ * The map for a ballot's state and cycle, from its title (decided 2026-11-22:
+ * maps are kept per cycle, public/maps/<year>/XX.json): "2026 Midterm
+ * Washington District 2" → Washington's 2026 map. Any year, Midterm or
+ * General; the statewide ballot ("2026 Midterm · Washington: …") and a
+ * one-seat state's ballot ("2026 Midterm Alaska") too.
  */
-export function stateMapFor(title: string | undefined, prefix: string | null | undefined): { name: string; code: string } | null {
-  if (!prefix || !title?.startsWith(prefix)) return null
-  const p = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const name = Object.keys(STATE_MAPS).find(n => new RegExp(`^${p} (· )?${n}( District \\d+|:|$)`).test(title))
-  return name ? { name, code: STATE_MAPS[name] } : null
+export function stateMapFor(title: string | undefined): { name: string; code: string; year: number } | null {
+  const m = title?.match(/^(\d{4}) (Midterm|General) /)
+  if (!m || !title) return null
+  const name = Object.keys(STATE_MAPS).find(n => new RegExp(`^${m[0]}(· )?${n}( District \\d+|:|$)`).test(title))
+  return name ? { name, code: STATE_MAPS[name], year: Number(m[1]) } : null
 }
 
 export type Party = 'DEM' | 'REP' | 'IND' | 'OTHER'

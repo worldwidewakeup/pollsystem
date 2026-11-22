@@ -21,6 +21,14 @@ enum class ElectionKind(val titleWord: String) { MIDTERM("Midterm"), GENERAL("Ge
  */
 data class ElectionCycleDto(val year: Int, val date: LocalDate, val kind: ElectionKind) {
     val titlePrefix: String get() = "$year ${kind.titleWord}"
+
+    companion object {
+        /** A federal election year's kind: presidential years divide by 4. */
+        fun kindOf(year: Int): ElectionKind = if (year % 4 == 0) ElectionKind.GENERAL else ElectionKind.MIDTERM
+
+        /** "2026 Midterm", "2028 General": the title prefix of any cycle's ballots, from its year. */
+        fun prefixFor(year: Int): String = "$year ${kindOf(year).titleWord}"
+    }
 }
 
 data class SetElectionCycleRequest(val year: Int, val date: LocalDate, val kind: ElectionKind)

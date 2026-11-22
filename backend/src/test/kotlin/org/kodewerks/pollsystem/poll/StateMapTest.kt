@@ -127,6 +127,11 @@ class StateMapTest : AbstractIntegrationTest() {
         val default = cycle.get()
         assertThat(default.titlePrefix).isEqualTo("2026 Midterm")
         assertThat(map.results("WY", null, sup).districts.map { it.electionId }).containsExactly(y2026)
+        // Any cycle's map by its year (V49 era, 2026-11-22), without switching the cycle.
+        assertThat(map.results("WY", null, sup, 2028).districts.map { it.electionId }).containsExactly(y2028)
+        assertThat(map.results("WY", null, sup, 2026).districts.map { it.electionId }).containsExactly(y2026)
+        org.assertj.core.api.Assertions.assertThatThrownBy { map.results("WY", null, sup, 2027) }
+            .isInstanceOf(org.springframework.web.server.ResponseStatusException::class.java)
         try {
             val set = cycle.set(org.kodewerks.pollsystem.cycle.SetElectionCycleRequest(2028, LocalDate.of(2028, 11, 7),
                 org.kodewerks.pollsystem.cycle.ElectionKind.GENERAL), sup)

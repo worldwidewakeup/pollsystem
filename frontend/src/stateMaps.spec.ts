@@ -3,25 +3,25 @@ import { stateMapFor, topTwoParties } from './stateMaps'
 
 describe('which results pages link to a state map', () => {
   it("a state's 2026 midterm ballots do: district and statewide", () => {
-    expect(stateMapFor('2026 Midterm Washington District 2', '2026 Midterm')).toEqual({ name: 'Washington', code: 'WA' })
-    expect(stateMapFor('2026 Midterm · Washington: Supreme Court & statewide measures', '2026 Midterm')).toEqual({ name: 'Washington', code: 'WA' })
-    expect(stateMapFor('2026 Midterm Oregon District 4', '2026 Midterm')).toEqual({ name: 'Oregon', code: 'OR' })
-    expect(stateMapFor('2026 Midterm · Idaho: statewide races & measures', '2026 Midterm')).toEqual({ name: 'Idaho', code: 'ID' })
-    expect(stateMapFor('2026 Midterm Alaska', '2026 Midterm')).toEqual({ name: 'Alaska', code: 'AK' })
-    expect(stateMapFor('2026 Midterm New York District 14', '2026 Midterm')).toEqual({ name: 'New York', code: 'NY' })
-    expect(stateMapFor('2026 Midterm West Virginia District 2', '2026 Midterm')).toEqual({ name: 'West Virginia', code: 'WV' })
-    expect(stateMapFor('2026 Midterm Virginia District 2', '2026 Midterm')).toEqual({ name: 'Virginia', code: 'VA' })
+    expect(stateMapFor('2026 Midterm Washington District 2')).toEqual({ name: 'Washington', code: 'WA', year: 2026 })
+    expect(stateMapFor('2026 Midterm · Washington: Supreme Court & statewide measures')).toEqual({ name: 'Washington', code: 'WA', year: 2026 })
+    expect(stateMapFor('2026 Midterm Oregon District 4')).toEqual({ name: 'Oregon', code: 'OR', year: 2026 })
+    expect(stateMapFor('2026 Midterm · Idaho: statewide races & measures')).toEqual({ name: 'Idaho', code: 'ID', year: 2026 })
+    expect(stateMapFor('2026 Midterm Alaska')).toEqual({ name: 'Alaska', code: 'AK', year: 2026 })
+    expect(stateMapFor('2026 Midterm New York District 14')).toEqual({ name: 'New York', code: 'NY', year: 2026 })
+    expect(stateMapFor('2026 Midterm West Virginia District 2')).toEqual({ name: 'West Virginia', code: 'WV', year: 2026 })
+    expect(stateMapFor('2026 Midterm Virginia District 2')).toEqual({ name: 'Virginia', code: 'VA', year: 2026 })
   })
-  it('follows the cycle (V47): 2028 General ballots once the cycle is 2028, not 2026 ones', () => {
-    expect(stateMapFor('2028 General Washington District 2', '2028 General')).toEqual({ name: 'Washington', code: 'WA' })
-    expect(stateMapFor('2026 Midterm Washington District 2', '2028 General')).toBeNull()
-    expect(stateMapFor('2026 Midterm Washington District 2', null)).toBeNull()
+  it('any cycle, with its year (maps are per cycle, 2026-11-22)', () => {
+    expect(stateMapFor('2028 General Washington District 2')).toEqual({ name: 'Washington', code: 'WA', year: 2028 })
+    expect(stateMapFor('2026 Midterm Washington District 2')?.year).toBe(2026)
+    expect(stateMapFor('2030 Midterm Wyoming')).toEqual({ name: 'Wyoming', code: 'WY', year: 2030 })
   })
   it("others don't: other states, other polls, a look-alike name", () => {
-    expect(stateMapFor('2026 Midterm District of Columbia District 1', '2026 Midterm')).toBeNull()
-    expect(stateMapFor('Washington parks questionnaire', '2026 Midterm')).toBeNull()
-    expect(stateMapFor('2026 Midterm Washingtonia', '2026 Midterm')).toBeNull()
-    expect(stateMapFor(undefined, '2026 Midterm')).toBeNull()
+    expect(stateMapFor('2026 Midterm District of Columbia District 1')).toBeNull()
+    expect(stateMapFor('Washington parks questionnaire')).toBeNull()
+    expect(stateMapFor('2026 Midterm Washingtonia')).toBeNull()
+    expect(stateMapFor(undefined)).toBeNull()
   })
 })
 

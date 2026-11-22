@@ -88,13 +88,18 @@ class StateMapController(
     fun results(
         @PathVariable state: String,
         @RequestParam(required = false) measureId: Long?,
-        @AuthenticationPrincipal principal: AppUserDetails? = null
+        @AuthenticationPrincipal principal: AppUserDetails? = null,
+        // A past (or prepared) cycle's map, e.g. ?year=2026 (decided 2026-11-22); default the current one.
+        @RequestParam(required = false) year: Int? = null
     ): StateMapDto {
+        if (year != null && (year !in 2000..2100 || year % 2 != 0)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a federal election year: $year")
+        }
         val st = states.findByInitial(state.uppercase())
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown state: $state")
         // The launch-content title shapes (scripts/launch-content/load-state.bash),
         // for the current cycle (V47): "2026 Midterm Washington District 2".
-        val prefix = cycle.current().titlePrefix
+        val prefix = year?.let { org.kodewerks.pollsystem.cycle.ElectionCycleDto.prefixFor(it) } ?: cycle.current().titlePrefix
         val districtTitle = Regex("^${Regex.escape(prefix)} ${Regex.escape(st.name)} District (\\d+)$")
         val shown = elections.findAll().filter { it.status in visible }
         val atLarge = shown.firstOrNull { it.title == "$prefix ${st.name}" }

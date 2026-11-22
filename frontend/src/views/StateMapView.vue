@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // A state's district map (/maps/WA, decided 2026-11-03). The shapes come from
-// public/maps/XX.json (scripts/maps/build-state-map.py, Census boundaries);
+// public/maps/<year>/XX.json, one set per cycle (2026-11-22; ?year=2026 picks a
+// cycle, else the current one) (scripts/maps/build-state-map.py);
 // the numbers from /api/polls/maps/XX/results, which follows the results pages'
 // privacy. Left: a radio, a color and a party per row (Dem, Rep, Ind, Other,
 // top 2); below: a district and a ballot measure. Top 2 shows the two leading
@@ -12,6 +13,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { topTwoParties, type Party } from '@/stateMaps'
+import { loadElectionCycle } from '@/composables/useElectionCycle'
 
 type Mode = Party | 'TOP2'
 /** A color key: a party's, or TEXT (the top 2 row: the "/" and a measure's numbers). */
@@ -25,6 +27,9 @@ interface MapShapes { width: number; height: number; outline: string; borders: s
 const { t } = useI18n()
 const route = useRoute()
 const code = computed(() => String(route.params.state).toUpperCase())
+// The cycle shown: ?year=2026, else the site's current cycle (set once loaded).
+const year = ref<number | null>(null)
+const cyclePrefix = computed(() => (year.value ? `${year.value} ${year.value % 4 === 0 ? 'General' : 'Midterm'}` : ''))
 
 const shapes = ref<MapShapes | null>(null)
 const data = ref<StateMapResults | null>(null)
@@ -53,15 +58,20 @@ const rows: { mode: Mode; party: ColorKey; label: string }[] = [
 async function loadResults() {
   try {
     data.value = (await axios.get<StateMapResults>(`/api/polls/maps/${code.value}/results`,
-      { params: measureId.value ? { measureId: measureId.value } : {} })).data
+      { params: { year: year.value ?? undefined, ...(measureId.value ? { measureId: measureId.value } : {}) } })).data
     error.value = null
   } catch (e: any) {
     error.value = e?.response?.data?.message ?? t('stateMap.loadFailed')
   }
 }
 onMounted(async () => {
+  const asked = Number(route.query.year)
+  year.value = Number.isInteger(asked) && asked >= 2000 && asked % 2 === 0
+    ? asked
+    : (await loadElectionCycle())?.year ?? null
   try {
-    const r = await fetch(`/maps/${code.value}.json`)
+    if (!year.value) throw new Error()
+    const r = await fetch(`/maps/${year.value}/${code.value}.json`)
     if (!r.ok) throw new Error()
     shapes.value = await r.json()
   } catch {
@@ -146,6 +156,7 @@ const districtNumbers = computed(() => Object.keys(shapes.value?.districts ?? {}
 <template>
   <div class="mx-auto max-w-6xl px-4 py-6">
     <h1 class="mb-1 text-2xl font-semibold text-slate-800">{{ $t('stateMap.title', { state: data?.stateName ?? code }) }}</h1>
+    <p v-if="cyclePrefix" class="m-0 mb-1 text-sm text-slate-600" data-test="map-cycle">{{ cyclePrefix }}</p>
     <p class="m-0 mb-4 text-sm text-slate-600">{{ $t('stateMap.disclaimer') }}</p>
 
     <p v-if="noMap" class="text-slate-600" data-test="no-map">{{ $t('stateMap.noMap') }}</p>

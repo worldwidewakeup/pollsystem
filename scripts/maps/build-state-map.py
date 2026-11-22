@@ -2,7 +2,8 @@
 """
 build-state-map.py: one state's district map for /maps/XX (decided 2026-11-03).
 
-Reads Census public-domain boundaries and writes frontend/public/maps/XX.json:
+Reads Census public-domain boundaries and writes frontend/public/maps/<year>/XX.json
+(one set per election cycle since 2026-11-22; scripts/election-cycle/cycle.py maps picks the path):
 the state outline, the borders between congressional districts, each district's
 shape (to zoom to and highlight) and a spot for its label, all as SVG path data
 in a 1000-wide box. The page draws and colors it live from /api/polls/maps/XX/results.
@@ -13,7 +14,7 @@ Inputs (download once, e.g. into tmp/maps/):
 
 Usage (needs shapely and pyshp; e.g. in python:3.12-slim with pip install shapely pyshp):
   python build-state-map.py STATE_CODE STATE_FIPS COUNTIES_JSON CD_ZIP OUT_JSON [--exclude-counties FIPS,...]
-  e.g. WA 53 tmp/maps/counties.json tmp/maps/cd.zip frontend/public/maps/WA.json --exclude-counties 53029
+  e.g. WA 53 tmp/maps/counties.json tmp/maps/cd.zip frontend/public/maps/2026/WA.json --exclude-counties 53029
        (Washington without Island County, as chosen 2026-11-02)
 
 A state that redrew its districts for 2026 (the Census file has the old lines)

@@ -115,5 +115,19 @@ class PollSearchPurviewTest : AbstractIntegrationTest() {
         // A zipcode pick lists only polls for exactly those zipcodes, as before.
         assertThat(found(zips = listOf("98225"))).isEmpty()
         assertThat(oregon2).isNotIn(found(countyIds = listOf(waCounty("Whatcom"))))
+
+        // V49: rows belong to an election year. A 2028 District 2 ballot isn't found
+        // from Whatcom until 2028 rows exist; then each year's ballot uses its own rows.
+        val d2028 = ballot("2028 General Washington District 2", wa)
+        assertThat(found(countyIds = listOf(waCounty("Whatcom")))).containsExactly(d2)
+        jdbc.update("INSERT INTO district_counties (election_year, plan, state_id, district, county_id, whole) " +
+            "VALUES (2028, 'TEST2028', ?, 2, ?, TRUE)", wa, waCounty("Whatcom"))
+        try {
+            assertThat(found(countyIds = listOf(waCounty("Whatcom")))).containsExactlyInAnyOrder(d2, d2028)
+        } finally {
+            jdbc.update("DELETE FROM district_counties WHERE plan = 'TEST2028'")
+        }
     }
+
+    @Autowired private lateinit var jdbc: org.springframework.jdbc.core.JdbcTemplate
 }

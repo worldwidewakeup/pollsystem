@@ -40,7 +40,7 @@ yet.
 | Counties | ~3,140 counties and equivalents | rarely (a few renames or new ones per decade, mostly Alaska and Connecticut) | `counties` (V8) |
 | Zipcodes | zip → county, ~32,000 rows | slowly, every year | `county_zips` (V9) |
 | House seats per state | apportionment | after each census (next: 2030 census → 2032 elections) | `SEATS` in `scripts/launch-content/build-state.py` |
-| District lines | each district's shape | after each census, plus mid-decade redraws and court orders (2026: TX, CA, FL, NC, OH, UT, AL, LA, …) | maps: `frontend/public/maps/XX.json`; counties: `district_counties` (V46) |
+| District lines | each district's shape | after each census, plus mid-decade redraws and court orders (2026: TX, CA, FL, NC, OH, UT, AL, LA, …) | **per cycle** (2026-11-22): maps `frontend/public/maps/<year>/XX.json`; counties `district_counties` rows with their `election_year` (V46, V49) |
 | Ballots | the races, candidates, measures, poll-closing time | every election | research `docs/launch-content/research/XX.{md,json}` → content `scripts/launch-content/xx-YYYY-*.json` → polls |
 
 So a typical midterm (no census) redoes **ballots** for all states, plus
@@ -128,8 +128,12 @@ doesn't match.
 
 ### Step 4 — District maps for `/maps/XX` (script + you)
 
-`scripts/maps/build-state-map.py` writes `frontend/public/maps/XX.json`. It
-has four modes, chosen per state:
+`scripts/maps/build-state-map.py` writes `frontend/public/maps/<year>/XX.json`.
+Maps are kept **per cycle**, so a past cycle's results stay drawn on the lines
+they were voted under: `/maps/WA?year=2026`, while `/maps/WA` shows the current
+cycle. A new cycle needs every state's map in its own folder (copy the unchanged
+ones from the previous year; rebuild the redrawn ones). It has four modes,
+chosen per state:
 
 | State's situation | Mode | Input |
 |---|---|---|
@@ -168,8 +172,11 @@ own area stays statewide.
   not Richmond County; likewise Baltimore city and St. Louis city), as in the
   `counties` table.
 - **As of V48:** every multi-seat state except Tennessee has rows.
-- **How it ships:** a migration with a new plan name per change (e.g.
-  `CD119`, then `TX2026`). Drop the state's old rows in the same migration.
+- **How it ships:** a migration whose rows carry the cycle's `election_year`
+  (V49) and a plan name (e.g. `CD119`, `TX2025`). `cycle.py districts --write`
+  replaces only that year's rows; earlier cycles keep theirs, and each
+  ballot's county search uses its own year's rows. A new cycle needs rows for
+  every multi-seat state, including the unchanged ones.
 
 ### Step 6 — Research each state's ballot (Claude, you review)
 

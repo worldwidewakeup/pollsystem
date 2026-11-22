@@ -134,10 +134,11 @@ class PollSearchController(
         // (V46 district_counties, decided 2026-11-20). Those ballots keep their
         // statewide area; this is a search aid only. A split county finds each
         // district it touches.
-        val countyDistricts: Set<Pair<Long, Int>> = if (countyPicked) jdbc.query(
-            "SELECT DISTINCT state_id, district FROM district_counties WHERE county_id IN (:ids)",
+        // Rows belong to an election year (V49): a ballot uses its own year's lines.
+        val countyDistricts: Set<Triple<Int, Long, Int>> = if (countyPicked) jdbc.query(
+            "SELECT DISTINCT election_year, state_id, district FROM district_counties WHERE county_id IN (:ids)",
             mapOf("ids" to searchedCounties)
-        ) { rs, _ -> rs.getLong("state_id") to rs.getInt("district") }.toSet() else emptySet()
+        ) { rs, _ -> Triple(rs.getInt("election_year"), rs.getLong("state_id"), rs.getInt("district")) }.toSet() else emptySet()
         // Everything per poll is loaded once for the whole search, not per poll:
         // on prod each query crosses the network, and one-per-poll took 6–50 s
         // (2026-10-26).
@@ -159,8 +160,8 @@ class PollSearchController(
             val rows = purviewByPoll[kind to pollId].orEmpty()
             return rows.isEmpty() || rows.any { it.scopeLevel == ScopeLevel.NATIONAL }   // no declared purview = nationwide
         }
-        // Any year, midterm or presidential ("General", V47).
-        val districtTitle = Regex("""(?:Midterm|General)\s+(.+?)\s+District\s+(\d+)\s*$""", RegexOption.IGNORE_CASE)
+        // Any year, midterm or presidential ("General", V47): "2026 Midterm Washington District 2".
+        val districtTitle = Regex("""(\d{4})\s+(?:Midterm|General)\s+(.+?)\s+District\s+(\d+)\s*$""", RegexOption.IGNORE_CASE)
         /** A district ballot of one state whose district touches the searched county. */
         fun districtBallotMatches(electionId: Long, title: String): Boolean {
             if (countyDistricts.isEmpty()) return false
@@ -168,8 +169,8 @@ class PollSearchController(
             val row = rowsOf(PollKind.ELECTION, electionId).singleOrNull() ?: return false
             if (row.scopeLevel != ScopeLevel.STATE) return false
             val stateId = row.stateId ?: return false
-            if (!stateNames[stateId].equals(m.groupValues[1], ignoreCase = true)) return false
-            return (stateId to m.groupValues[2].toInt()) in countyDistricts
+            if (!stateNames[stateId].equals(m.groupValues[2], ignoreCase = true)) return false
+            return Triple(m.groupValues[1].toInt(), stateId, m.groupValues[3].toInt()) in countyDistricts
         }
         fun purviewIncludesSearch(kind: PollKind, pollId: Long): Boolean {
             val rows = purviewByPoll[kind to pollId].orEmpty()

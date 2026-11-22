@@ -31,7 +31,7 @@ polls (as drafts unless --publish).
       state's plan, as SQL that replaces the state's rows. Printed, or with
       --write a new migration VNN__NAME.sql (review it before committing).
 
-  scripts/election-cycle/cycle.py content XX ... [--cycle 2026]
+  scripts/election-cycle/cycle.py content XX ... [--cycle 2026] [--research-dir DIR]
       build-state.py: research JSON -> content files, with the cycle's year.
 
   scripts/election-cycle/cycle.py load local|staging|prod XX ... [--cycle 2026] [--publish]
@@ -368,7 +368,8 @@ JOIN counties c ON c.state_id = s.id AND c.name = v.county;
 def content(args):
     cyc = load_cycle(args.cycle)
     states = chosen(cyc, args.states)
-    return subprocess.run([sys.executable, 'scripts/launch-content/build-state.py', *states, '--cycle', str(cyc['year'])],
+    extra = ['--research-dir', os.path.abspath(args.research_dir)] if args.research_dir else []
+    return subprocess.run([sys.executable, 'scripts/launch-content/build-state.py', *states, '--cycle', str(cyc['year']), *extra],
                           cwd=ROOT).returncode
 
 
@@ -395,6 +396,8 @@ def main():
     for name, hlp in (('maps', 'rebuild states\' district maps'), ('content', 'build states\' content files')):
         x = sub.add_parser(name, help=hlp)
         x.add_argument('states', nargs='*'); x.add_argument('--cycle', default='2026')
+        if name == 'content':
+            x.add_argument('--research-dir', help='research files from this folder (e.g. a rehearsal\'s copies)')
     d = sub.add_parser('districts', help='district <-> county rows (SQL) for states')
     d.add_argument('states', nargs='*'); d.add_argument('--cycle', default='2026')
     d.add_argument('--write', metavar='NAME', help='write a new migration VNN__NAME.sql instead of printing')

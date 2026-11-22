@@ -5,6 +5,7 @@ into content files for create-polls.py, checking it first.
 
   scripts/launch-content/build-state.py XX [XX ...] [--cycle 2026]   build (and check)
   scripts/launch-content/build-state.py XX --check [--cycle 2026]    check only
+  (--research-dir DIR reads the research files from DIR, e.g. a rehearsal's copies)
 
 The cycle (2026-11-20) comes from docs/launch-content/<year>-cycle.json: its
 year, election day, kind (Midterm or General: a presidential year's research
@@ -51,8 +52,14 @@ CLOSE_UTC = re.compile(rf"({_day.isoformat()}|{(_day + _dt.timedelta(days=1)).is
 DAY_TEXT = f"{_day.strftime('%b')} {_day.day} {_day.year}"   # "Nov 3 2026"
 
 
+# --research-dir DIR (2026-11-22): read research files from DIR instead, e.g. a
+# rehearsal's edited copies; the output paths are the same.
+RESEARCH = (sys.argv[sys.argv.index('--research-dir') + 1] if '--research-dir' in sys.argv
+            else os.path.join(ROOT, 'docs/launch-content/research'))
+
+
 def load(abbr):
-    with open(os.path.join(ROOT, 'docs/launch-content/research', f'{abbr}.json'), encoding='utf-8') as f:
+    with open(os.path.join(RESEARCH, f'{abbr}.json'), encoding='utf-8') as f:
         return json.load(f)
 
 
@@ -139,8 +146,9 @@ def build(abbr, ids):
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
-    if '--cycle' in argv:
-        k = argv.index('--cycle'); del argv[k:k + 2]
+    for opt in ('--cycle', '--research-dir'):
+        if opt in argv:
+            k = argv.index(opt); del argv[k:k + 2]
     args = [a for a in argv if not a.startswith('--')]
     ids = json.load(open(os.path.join(HERE, 'state-ids.json')))
     ok = True

@@ -61,6 +61,64 @@ logged.
 
 ---
 
+## 2026-11-22 — State maps and district rows kept per election cycle
+
+**Requested:**
+
+> Now, I seem to recall that I should test the new script(s) on staging for
+> generating the midterm and presidential election assets such as changes in
+> districts, candidates, state maps with showing districts, etc, which I'm up
+> for but I'm not sure how we'd do it since I don't think how can mock the
+> changes since we don't know what the changes will be or perhaps I totally
+> misinterpreted what you said.
+
+> go ahead with the local rehearsal, (b)
+
+(b) answered the gap found while planning the rehearsal: maps and
+district rows weren't per cycle, so building 2028's Texas map would have
+redrawn 2026's results map.
+
+**Changed:**
+
+- **Maps per year:** the 50 maps moved to `frontend/public/maps/2026/`.
+  `/maps/XX` shows the current cycle, `/maps/XX?year=2026` any cycle, and
+  the page names it ("2028 General").
+- **Results-page links:** a results page links to its own cycle's map;
+  `stateMapFor` reads the year from any "YYYY Midterm/General" title.
+- **The map endpoint** takes `?year=` (even years only). The title prefix
+  follows from the year: presidential years divide by 4
+  (`ElectionCycleDto.prefixFor`).
+- **V49:** `district_counties.election_year`, with existing rows as 2026
+  and the year part of the key. County search matches a district ballot with
+  its own year's rows.
+- **`cycle.py`:**
+  - `maps` writes `maps/<year>/`;
+  - `districts` writes and replaces one year's rows;
+  - `status` counts the cycle's rows;
+  - `check` asks for the cycle's map.
+- The runbook says a new cycle needs every state's map and rows in its own
+  year: copied when unchanged, rebuilt when redrawn.
+
+**Verified:**
+
+- Backend: PollSearchControllerTest 9, PollSearchPurviewTest 2,
+  StateSearchTest 2 and StateMapTest 4 pass. New cases:
+  - a 2028 ballot isn't found until 2028 rows exist, then each year uses
+    its own;
+  - `?year=2028` and `?year=2026` maps;
+  - 2027 is refused.
+- Frontend: vue-tsc clean; 218 pass (`stateMapFor` for 2026, 2028 and
+  2030).
+- On local: V49 applied, with 3,470 rows as 2026. `check local` is all
+  good.
+  - `/maps/WA` and `/maps/WA?year=2026` show "2026 Midterm" and the map.
+  - `/maps/TX?year=2028` says there's no map yet.
+  - A Washington results page links to `/maps/WA?year=2026`.
+
+**Commit:** `6bf56a4`
+
+---
+
 ## 2026-11-22 — Staging and prod deploys: election cycle, district search, driver (verified)
 
 **Requested:**

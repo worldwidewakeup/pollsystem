@@ -61,6 +61,44 @@ logged.
 
 ---
 
+## 2026-11-22 — Staging and prod deploys: election cycle, district search, driver (verified)
+
+**Requested:**
+
+> Yes, push and deploy to staging please
+
+then, after a DNS outage (`EAI_AGAIN`, the lookup of api.anthropic.com
+failing for a while; nothing had been pushed), the user ran the prod
+backend deploy themselves:
+
+> I can run "cd backend && flyctl deploy -a pollsystem-backend -c fly.toml"
+> here by prefacing it with a ! , correct?
+
+**Verified:**
+
+- **The push:** `main` went to `b2c43de` (14 commits: county → district
+  search, the election-cycle setting, the driver, V46–V48). CI passed,
+  including the full backend suite.
+- **Staging:**
+  - backend deployed and healthy;
+  - `/api/election-cycle` → 2026 Midterm;
+  - `cycle.py check staging`: 435 ballots, all good;
+  - county search: Whatcom → WA-2, Travis → TX-10, 11, 27, 37, Richmond
+    city → VA-4;
+  - the new frontend build is live.
+- **Prod's frontend** auto-deployed with the push, so until the backend
+  followed, results pages lost their state-map link.
+- **Prod backend, v36:**
+  - `flyway_schema_history` shows 46, 47 and 48, all successful;
+  - `district_counties` has 3,470 rows across 43 states;
+  - `/api/election-cycle` → 2026 Midterm;
+  - `cycle.py check prod`: 435 published ballots, maps matching, all good;
+  - WA + Whatcom → "2026 Midterm Washington District 2".
+
+**Commit:** none — verification only (exercised `b2c43de`)
+
+---
+
 ## 2026-11-20 — Election-cycle driver: fetch, maps, districts, content, load (runbook step 4)
 
 **Requested:** step 4 of the agreed order ("go with your order"): wrap the

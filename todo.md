@@ -214,6 +214,14 @@
      - Ballotpedia covers most races, but its data is a paid product.
    - Done: No.
 
+-  LLC (World Wide Wakeup, LLC): waiting on input from the soon-to-be lawyer.
+   - Asked of them: the LLC's structure, the steps to complete that structure, and approximate costs.
+   - Discussed in a BallotBox or resilient-chat conversation (not on record in the BallotBox session;
+     noted 2026-11-22). Already done: the GitHub repo is in the LLC's organization (worldwidewakeup);
+     moving the Porkbun, Cloudflare and Fly accounts into the LLC's name was discussed.
+   - Next: once the lawyer answers, record the decisions and steps here (and costs in docs/COSTS.md).
+   - Done: No.
+
 # Possible add ons for a later date if needed:
 
 -  Narrow a creator's access below statewide (an admin's "scalpel").

@@ -61,6 +61,56 @@ logged.
 
 ---
 
+## 2026-11-22 — `rehearse.bash`: the cycle rehearsal as an interactive script
+
+**Requested:**
+
+> And so what were the command(s) you used in the exact order with the same
+> args and can they be assembled into an interactive script?
+
+> yes build it, then push and deploy to staging
+
+**Changed:**
+
+- **New `scripts/election-cycle/rehearse.bash`:**
+  - It shows each step's command; Enter runs it, `s` skips it, `q` quits.
+  - It snapshots local first and **always restores**, however it ends (done,
+    `q`, an error, Ctrl-C). The restore stops the backend, runs
+    `pg_restore --clean --single-transaction`, deletes the rehearsal's files
+    and rows migration, and compares counts with the snapshot.
+  - It refuses to run over a real cycle's files, and works on the host or in
+    the Dev Container.
+  - Options: `--year`, `--states`, `--redraw`, `--yes`, `--no-pause`.
+- **New `scripts/election-cycle/rehearsal-inputs.py`:** writes the throwaway
+  cycle file (election day computed) and the edited research copies.
+  - Election night moves to the new date.
+  - Presidential years get a President race.
+  - One candidate is renamed, and measure dates shift.
+  - `--redraw` only accepts states that used a plan in 2026.
+- The runbook's section 6 points to the script.
+
+**Verified:**
+
+- Syntax checked. A bad `--redraw` (ID) is refused before anything is
+  written.
+- **An unattended run (`--yes --no-pause`):**
+  - snapshot taken;
+  - inputs written (ID-2's Mike Simpson renamed, President races added,
+    election day 2028-11-07);
+  - maps for ID, TX and WY built;
+  - 358 district rows applied;
+  - 43 elections loaded and published;
+  - cycle switched to 2028 General;
+  - `check local` → All good;
+  - the restore matched the snapshot (elections 486 … cycle 2026 MIDTERM),
+    with no files left behind.
+- `status` exits 1 at its step (everything is missing then, as it should
+  be); the step now says that's expected.
+
+**Commit:** `89dae4a`
+
+---
+
 ## 2026-11-22 — Local rehearsal of a new election cycle (verified)
 
 **Requested:**

@@ -61,6 +61,53 @@ logged.
 
 ---
 
+## 2026-11-22 — Local rehearsal of a new election cycle (verified)
+
+**Requested:**
+
+> go ahead with the local rehearsal, (b)
+
+**Verified** (local, with a throwaway "2028 General" cycle for Idaho, Texas
+and Wyoming, after a full `pg_dump` snapshot):
+
+- **The made-up changes:**
+  - Idaho: unchanged lines.
+  - Texas "redrawn": its 2026 plan swapped for the Census 2024 lines.
+  - Wyoming: one seat.
+  - Research copies with election night moved to 2028-11-07/08, a President
+    race added, and Texas District 2's Republican renamed "Rehearsal Renamed
+    Candidate".
+- **`status --cycle 2028`:** content, maps and district rows all missing, as
+  expected.
+- **`maps`:** ID and WY's 2028 maps came out byte-identical to 2026's; TX's
+  differs (Census lines).
+- **`districts --write`:** 358 rows for 2028 (ID 45, TX 313), all matching
+  counties. Applied with `psql`, and 2026's 3,470 rows were untouched.
+- **`content --research-dir`:** "2028 General …" titles, date
+  2028-11-07, closing on election night, district ballots including the
+  statewide one, the President race first, and the renamed candidate.
+- **`load local --publish`:** 43 elections and 4 measures created, all
+  published.
+- **The cycle switched to 2028 General** through the API. `check local --cycle
+  2028`: ID 2/2, TX 38/38, WY 1/1 ballots, maps matching, "All good".
+- **In the browser:**
+  - `/maps/TX` shows "2028 General" with the 2028 map;
+  - `/maps/TX?year=2026` shows 2026's plan;
+  - the 2028 TX-2 results page links to `/maps/TX?year=2028` and lists the
+    statewide ballot "Also on this ballot". Candidates appear only once
+    there are responses.
+- **County search per year:** Travis → 2026: 10, 11, 27, 37 (2026 plan) and
+  2028: 10, 17, 21, 35, 37 (rehearsal lines); Ada → both years' 1 and 2.
+- **Restored:** `pg_restore` of the snapshot, then the counts compared
+  equal: elections 486, measures 161, candidates 1,919, events 1,877,
+  district rows 3,470, cycle 2026 MIDTERM. Migrations end at V49, and the
+  rehearsal files were deleted.
+- **The runbook** gained "Rehearsing a cycle" (section 6).
+
+**Commit:** none — verification only (exercised `a52bbf8`; runbook section in `586e856`)
+
+---
+
 ## 2026-11-22 — State maps and district rows kept per election cycle
 
 **Requested:**

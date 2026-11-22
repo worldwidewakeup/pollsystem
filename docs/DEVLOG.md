@@ -61,6 +61,28 @@ logged.
 
 ---
 
+## 2026-11-22 — Prod backend v37: per-cycle maps and district rows (verified)
+
+**Requested:** the user ran
+`cd backend && flyctl deploy -a pollsystem-backend -c fly.toml` themselves,
+shipping `main` at `4d383fb` (per-cycle maps and rows, `6bf56a4`, with
+V49).
+
+**Verified:**
+
+- Release v37 is complete.
+- Prod's migration history ends at 49, and the 3,470 `district_counties`
+  rows are all election year 2026.
+- `/api/polls/maps/WA/results?year=2027` → 400, so the new code is live.
+- `cycle.py check prod`: all good (435 ballots, maps matching for 2026).
+- WA + Whatcom → "2026 Midterm Washington District 2".
+- Prod's frontend already had the per-cycle maps (`/maps/2026/WA.json` 200)
+  from the push.
+
+**Commit:** none — verification only (exercised `4d383fb`)
+
+---
+
 ## 2026-11-22 — The runbook gets a usage reference for every script
 
 **Requested:**

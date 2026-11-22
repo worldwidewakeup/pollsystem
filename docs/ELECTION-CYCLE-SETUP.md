@@ -301,6 +301,14 @@ The real changes aren't known in advance, so a rehearsal invents realistic
 ones that take every path. Run it on **local**: the steps run there anyway,
 maps show up at once, and local can be put back exactly.
 
+**The script:** `scripts/election-cycle/rehearse.bash` runs all of it
+interactively. Before each step it shows the command (Enter runs it, `s`
+skips it, `q` quits). Local is snapshotted first and restored however it
+ends. Defaults are `--year 2028 --states "ID TX WY" --redraw "TX"`; `--yes`
+runs unattended. The made-up inputs come from
+`scripts/election-cycle/rehearsal-inputs.py`. The steps it runs, for doing
+it by hand:
+
 1. Snapshot local: `docker exec pollsystem-db pg_dump -U polladmin -d pollsystem -Fc -f /tmp/local-before.dump`.
 2. A throwaway `docs/launch-content/2028-cycle.json` for a few states: one with
    unchanged lines (ID), one "redrawn" (TX switched from its plan back to the

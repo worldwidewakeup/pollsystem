@@ -61,6 +61,32 @@ logged.
 
 ---
 
+## 2026-11-22 — To-do: waiting on the lawyer for the LLC's structure
+
+**Requested:**
+
+> Ok, but I'm waiting on some input from my soon to be lawyer to answer LLC
+> structure questions and steps to complete for said structure and
+> approximate costs. Correct?
+
+> Yes, make a 'To Do' item please. The conversation may have been from
+> either the BallotBox or resilient-chat conversations.
+
+**Changed:**
+
+- **A new item in `todo.md`,** before "Possible add ons": waiting on the
+  soon-to-be lawyer for World Wide Wakeup, LLC's structure, the steps to
+  complete it, and approximate costs. It notes what's already done (the
+  repo is in the LLC's GitHub organization; moving the Porkbun, Cloudflare
+  and Fly accounts was discussed).
+- **Where it was discussed:** not on record in this session or the repo's
+  transcripts, so the item says it came from a BallotBox or resilient-chat
+  conversation.
+
+**Commit:** `031ff68`
+
+---
+
 ## 2026-11-22 — Prod backend v37: per-cycle maps and district rows (verified)
 
 **Requested:** the user ran

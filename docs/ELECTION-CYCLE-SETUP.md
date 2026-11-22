@@ -242,56 +242,197 @@ dashboard's **Election cycle** card. Ballot titles start with its prefix
 published**: the maps then move to them. Preparing the next cycle doesn't
 need it.
 
-Still fixed to 2026 (the driver's per-cycle file replaces these):
-
-| Where | What's fixed |
-|---|---|
-| `scripts/launch-content/build-state.py` | `P = "2026 Midterm · "`, `DATE = "2026-11-03"`, output file names, `SEATS` |
-| `scripts/launch-content/load-state.bash` | the `xx-2026-*.json` file names |
-| `scripts/maps/build-state-map.py`, `district-counties.py` | default Census file names (`cd119`) |
+The scripts no longer have 2026 built in (2026-11-20): `build-state.py` and
+`load-state.bash` read the year, election day, title prefix and seats from
+the cycle file (`--cycle`). The Census file names for a new Congress are
+set in the cycle file's `downloads`.
 
 `ResultsPrivacy.kt` and `PollHistoryService.kt` mention 2026 only as dates
 of decisions in comments.
 
 ---
 
-## 5. Proposed automation (to build next)
+## 5. The scripts
 
-One driver, `scripts/election-cycle/cycle.py`, around a file per cycle,
-`docs/launch-content/<year>-cycle.json`. The 2026 one exists; copy it for
-2028. House seats are in `scripts/election-cycle/apportionment-2020.json`.
-Example of a cycle file:
+Everything runs from the repo root. The driver, `scripts/election-cycle/cycle.py`,
+reads one file per cycle and calls the other scripts the right way for
+each state. You rarely need to run the others directly. Their usage is
+below for when you do.
 
-```
-docs/launch-content/2028-cycle.json
+**Requirements:**
+- `python3` (standard library only) for the driver, `build-state.py`,
+  `district-counties.py` and `rehearsal-inputs.py`.
+- **Docker** for the geometry: `cycle.py maps` and plan-based `districts`
+  run `build-state-map.py` / `plan-district-counties.py` in a
+  `python:3.12-slim` container with shapely, pyshp, pyproj and openpyxl.
+  `load-state.bash` also uses Docker, and `rehearse.bash` uses the
+  `pollsystem-db` container.
+- **Tokens** (git-ignored, never printed) for `load`:
+  `.devcontainer/{local-content-super,staging-super,prod-super}-token.secrets.env`.
+
+### 5.1 The cycle file
+
+`docs/launch-content/<year>-cycle.json`. Copy the last one and edit it. An
+excerpt of 2026's:
+
+```json
 {
-  "year": 2028, "date": "2028-11-07", "kind": "general", "congress": 121,
+  "year": 2026, "date": "2026-11-03", "kind": "MIDTERM", "congress": 119,
+  "apportionment": "scripts/election-cycle/apportionment-2020.json",
+  "downloads": {
+    "counties.json": "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json",
+    "cd.zip": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_cd119_500k.zip",
+    "county-district.txt": "https://www2.census.gov/geo/docs/maps-data/data/rel2020/cd-sld/tab20_cd11920_county20_natl.txt",
+    "tl_2020_us_county.zip": "https://www2.census.gov/geo/tiger/TIGER2020/COUNTY/tl_2020_us_county.zip"
+  },
   "states": {
-    "WA": { "lines": "census" },
-    "TX": { "lines": "plan", "map": "--districts tx-plan.zip --field DISTRICT",
-            "source": "<publisher>, <plan name>, <date enacted>" },
-    "TN": { "lines": "grid" }
+    "WA": { "lines": "census", "plan": "CD119", "excludeCounties": ["53029"] },
+    "TX": { "lines": "plan", "plan": "TX2025",
+            "source": "Texas Legislative Council, PLANC2333 (HB 4, 2025; in effect for 2026)",
+            "planFiles": { "districts": "tmp/maps/official/TX/planc2333.zip", "field": "District" } },
+    "OH": { "lines": "plan", "plan": "OH2025", "source": "…",
+            "planFiles": { "baf": "tmp/maps/official/OH/adopted-430.zip",
+                           "blocks": "tmp/maps/blocks/tl_2020_39_tabblock20.zip" } },
+    "TN": { "lines": "grid", "note": "…" }
   }
 }
 ```
 
-Commands (all built 2026-11-20), each rerunnable:
+- **`kind`:** `MIDTERM` or `GENERAL` (a presidential year). Ballot titles
+  start "2026 Midterm" or "2028 General".
+- **`lines`:** one of three modes.
+  - `census`: the Census file's lines.
+  - `plan`: the state's official plan. `planFiles` holds shapes + their
+    district field, or a block assignment file + the state's 2020 blocks.
+  - `grid`: numbered boxes until the plan is found.
+- **`plan`:** the label stored with the district rows.
+- **`excludeCounties`:** counties left off the map (FIPS codes).
+- **Official plan files** you download yourself, into `tmp/`, once you've
+  confirmed which plan is in force.
 
-| Command | Does |
-|---|---|
-| `status` | in the repo, per state: seats, research, content files, map (Census lines / plan / grid), district→county rows; lists what's missing |
-| `check ENV` | on a running site (local, staging, prod or a URL), read-only: the site's cycle, each state's published ballots numbered 1..N for its seats, its map's district count |
-| `fetch` | downloads the cycle file's `downloads` into `tmp/election-cycle/<year>/` |
-| `maps XX…` | `build-state-map.py` in each state's mode (Census lines with any `excludeCounties`, its plan's shapes or block list, or a grid) |
-| `districts XX… [--write NAME]` | district→county SQL that replaces each state's rows (Census file or the state's plan); `--write` makes the next `VNN__NAME.sql` migration |
-| `content XX…` | `build-state.py --cycle`: research → content files |
-| `load ENV XX… [--publish]` | `load-state.bash --cycle`: polls as drafts, existing ones skipped; `--publish` publishes |
+### 5.2 `scripts/election-cycle/cycle.py`: the driver
 
-Geometry (maps, plan districts) runs in a `python:3.12-slim` container, so
-Docker must be running.
+```
+cycle.py status    [XX …] [--cycle 2026]
+cycle.py check     local|staging|prod|URL [XX …] [--cycle 2026]
+cycle.py fetch     [--cycle 2026]
+cycle.py maps      XX … [--cycle 2026]
+cycle.py districts XX … [--cycle 2026] [--write NAME]
+cycle.py content   XX … [--cycle 2026] [--research-dir DIR]
+cycle.py load      local|staging|prod XX … [--cycle 2026] [--publish]
+```
 
-Research (step 6) stays a guided session per state, and decisions stay
-yours: the driver only reports what's missing.
+`--cycle` picks `docs/launch-content/<year>-cycle.json` (default 2026).
+States are two-letter codes; with none, `status` and `check` cover every
+state in the cycle file.
+
+| Command | Reads / writes | Does |
+|---|---|---|
+| `status` | reads the repo | per state: seats, research, content files, map mode, district→county rows for that year; then what's missing (exit 1 if anything) |
+| `check ENV` | reads a site, public endpoints only | the site's current cycle; each state's published ballots numbered 1..N for its seats (or the one ballot of a one-seat state); its map's district count for the cycle's year (exit 1 on a problem) |
+| `fetch` | writes `tmp/election-cycle/<year>/` | downloads the cycle file's `downloads`, skipping files already there |
+| `maps XX…` | writes `frontend/public/maps/<year>/XX.json` | `build-state-map.py` in the state's mode (needs Docker) |
+| `districts XX…` | prints SQL, or `--write NAME` → `backend/…/db/migration/VNN__NAME.sql` | district→county rows for the cycle's year, replacing that year's rows for those states; other years stay. Census file or the state's plan. One-seat and grid states are skipped. **Dry-run the migration on local inside `BEGIN … ROLLBACK` and check every row matched a county before committing.** |
+| `content XX…` | writes `scripts/launch-content/xx-<year>-*.json` | `build-state.py`: research JSON → content files (`--research-dir` to read research from another folder) |
+| `load ENV XX…` | creates polls | `load-state.bash`: drafts, statewide first then the district ballots; existing ones are skipped. `--publish` then publishes the states' drafts |
+
+Examples:
+
+```
+scripts/election-cycle/cycle.py status --cycle 2028
+scripts/election-cycle/cycle.py maps TX CA --cycle 2028
+scripts/election-cycle/cycle.py districts TX CA --cycle 2028 --write district_counties_2028_redraws
+scripts/election-cycle/cycle.py content WA OR ID --cycle 2028
+scripts/election-cycle/cycle.py load staging WA OR ID --cycle 2028
+scripts/election-cycle/cycle.py check prod --cycle 2028
+```
+
+From the Dev Container, `check local` can't reach local's backend
+directly. Run it in a container on the host network:
+`docker run --rm --network host -v "$PWD":/r -w /r python:3.12-slim python3 scripts/election-cycle/cycle.py check local`.
+
+### 5.3 `scripts/election-cycle/rehearse.bash`: a rehearsal on local
+
+```
+scripts/election-cycle/rehearse.bash [--year 2028] [--states "ID TX WY"] [--redraw "TX"] [--yes] [--no-pause]
+```
+
+- **`--year`:** the made-up cycle's year. A presidential year adds a
+  President race.
+- **`--states`:** states to rehearse; each needs a research JSON.
+- **`--redraw`:** states switched from their 2026 plan to the Census lines.
+- **`--yes`:** runs every step without asking.
+- **`--no-pause`:** skips the browser pause.
+
+It shows each step's command (Enter runs it, `s` skips it, `q` quits). It
+snapshots local first and restores however it ends. See section 6.
+
+### 5.4 The scripts the driver calls
+
+**`scripts/election-cycle/rehearsal-inputs.py`**: the rehearsal's made-up inputs.
+```
+rehearsal-inputs.py --year 2028 --states ID TX WY --redraw TX --research-dir tmp/rehearsal/2028/research
+```
+It writes `docs/launch-content/<year>-cycle.json` and edited research
+copies, and refuses to overwrite an existing cycle file.
+
+**`scripts/maps/build-state-map.py`**: one state's map.
+```
+build-state-map.py XX SS COUNTIES_JSON CD_ZIP OUT_JSON [--exclude-counties FIPS,…]            # Census lines
+build-state-map.py XX SS COUNTIES_JSON CD_ZIP OUT_JSON --districts PLAN.zip --field F --source "…"   # plan shapes
+build-state-map.py XX SS COUNTIES_JSON CD_ZIP OUT_JSON --baf PLAN --blocks tl_2020_SS_tabblock20.zip --source "…"
+build-state-map.py XX --grid N OUT_JSON                                                       # numbered boxes
+```
+`XX` is the state code and `SS` its FIPS code. `OUT_JSON` is
+`frontend/public/maps/<year>/XX.json`. It needs shapely and pyshp (plus
+pyproj for plans, and openpyxl for `.xlsx` block files).
+
+**`scripts/maps/district-counties.py`**: district→county rows from the Census file.
+```
+python3 -I scripts/maps/district-counties.py tab20_cd11920_county20_natl.txt WA [OR ID …]
+```
+It prints SQL `VALUES` rows (state, county, district, whole).
+
+**`scripts/maps/plan-district-counties.py`**: the same rows from an official plan.
+```
+plan-district-counties.py XX SS tl_2020_us_county.zip --districts PLAN.zip --field DISTRICT [--min-share 0.05] [--min-km2 0.5]
+plan-district-counties.py XX SS tl_2020_us_county.zip --baf PLAN --blocks tl_2020_SS_tabblock20.zip
+```
+- **Shapes** are overlaid on the full-detail 2020 county lines. Overlaps
+  under `--min-share` % of the county **and** `--min-km2` are dropped as
+  slivers.
+- **Borderline overlaps** (0.001%–1%) are listed on stderr. Check coastal
+  ones against land-only outlines.
+- **Block files** are exact, and water-only blocks are ignored.
+
+**`scripts/launch-content/build-state.py`**: research → content files.
+```
+build-state.py XX [XX …] [--cycle 2026] [--research-dir DIR]     # build (and check)
+build-state.py XX --check [--cycle 2026]                        # check only
+```
+- **Checks:** district count against the seats, closing time on election
+  night, candidates, and measure language.
+- **Outputs** go to `scripts/launch-content/xx-<year>-{statewide,house,ballot}.json`.
+- **`"rankedInApp": true`** in the research marks races the app ranks
+  (Alaska).
+
+**`scripts/launch-content/load-state.bash`**: content files → polls.
+```
+load-state.bash local|staging|prod XX [XX …] [--publish] [--cycle 2026]
+```
+It loads statewide first, then the district ballots that include it. It's
+rerunnable (existing polls are skipped). Local loads as
+`content-super@test.local`, so the demo seed can't wipe the ballots.
+
+**`scripts/launch-content/create-polls.py`**: what `load-state.bash` calls, for one file.
+```
+create-polls.py CONTENT.json --api URL --token-file FILE
+create-polls.py --api URL --token-file FILE --publish-election ID [ID …]
+create-polls.py --api URL --token-file FILE --retitle RENAMES.json
+create-polls.py HOUSE.json --api URL --token-file FILE --link-ballots
+```
+It creates elections and their measures as drafts. `--link-ballots` applies
+a file's titles and includes to elections that already exist.
 
 ---
 
